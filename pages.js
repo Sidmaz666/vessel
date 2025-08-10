@@ -177,7 +177,19 @@ const pages = [
   { id: 'fake-shutdown', name: 'Fake Shutdown', desc: 'Looks like OS shutting down', url: '/fake-shutdown' },
   { id: 'blue-screen-room', name: 'Blue Screen Room', desc: 'BSOD page with secrets', url: '/blue-screen-room' },
   { id: 'noise-room', name: 'The Noise Room', desc: 'Only sound, no visuals', url: '/noise-room' },
-  { id: 'final-node', name: 'Final Node', desc: 'The last hidden page with an epic 3D sequence revealing site\'s "truth"', url: '/final-node' }
+  { id: 'final-node', name: 'Final Node', desc: 'The last hidden page with an epic 3D sequence revealing site\'s "truth"', url: '/final-node' },
+  {
+    id: "Nakka Rocketry",
+    name: "Nakka Rocketry",
+    desc: "This site describes how to build, inexpensive, rocket motors using common material and simple hand tools.",
+    url: "https://nakka-rocketry.net/pvcmot4.html"
+  },
+  {
+    id: "Yarrlist",
+    name: "Yarrlist",
+    desc: "Movie/TV/Anime Website List",
+    url: "https://yarrlist.com/"
+  }
 ];
 
 module.exports = pages;

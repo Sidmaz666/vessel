@@ -189,7 +189,110 @@ const pages = [
     name: "Yarrlist",
     desc: "Movie/TV/Anime Website List",
     url: "https://yarrlist.com/"
+  },
+  {
+    id: "Proxyium",
+    name: "Proxyium",
+    desc: "Free web proxy that lets you browse anonymously and unblock sites like YouTube and Facebook.",
+    url: "https://proxyium.com"
+  },
+  {
+    id: "Hidester",
+    name: "Hidester",
+    desc: "Free online proxy and VPN service for secure and anonymous surfing.",
+    url: "https://hidester.one"
+  },
+  {
+    id: "Whoer",
+    name: "Whoer",
+    desc: "Privacy tool to check IP info, VPN status, and browse via free anonymizer.",
+    url: "https://whoer.net"
+  },
+  {
+    id: "OSINT Framework",
+    name: "OSINT Framework",
+    desc: "Directory of hundreds of free OSINT tools for open-source intelligence gathering.",
+    url: "https://osintframework.com"
+  },
+  {
+    id: "SpiderFoot",
+    name: "SpiderFoot",
+    desc: "Automated OSINT reconnaissance tool integrating multiple data sources.",
+    url: "https://spiderfoot.net"
+  },
+  {
+    id: "Shodan",
+    name: "Shodan",
+    desc: "Search engine for Internet-connected devices including webcams and servers.",
+    url: "https://shodan.io"
+  },
+  {
+    id: "Intelligence X",
+    name: "Intelligence X",
+    desc: "Investigative search engine indexing leaks, darknet content, blockchain data, and more.",
+    url: "https://intelx.io"
+  },
+  {
+    id: "Godlike Productions",
+    name: "Godlike Productions",
+    desc: "Public forum discussing conspiracies, UFOs, advanced tech, and fringe topics.",
+    url: "https://www.godlikeproductions.com"
+  },
+  {
+    id: "Rense",
+    name: "Rense",
+    desc: "Alternative news aggregator covering conspiracies, politics, and fringe science.",
+    url: "https://www.rense.com"
+  },
+  {
+    id: "The Vigilant Citizen",
+    name: "The Vigilant Citizen",
+    desc: "Analyzes pop culture for hidden messages and occult symbolism.",
+    url: "https://vigilantcitizen.com"
+  },
+  {
+    id: "Glitch Art Generator",
+    name: "Glitch Art Generator",
+    desc: "Online tool for applying glitch effects to images via pixel displacement.",
+    url: "https://glitchartgenerator.com"
+  },
+  {
+    id: "PhotoMosh",
+    name: "PhotoMosh",
+    desc: "Glitch art web app to create distorted images and videos with visual effects.",
+    url: "https://moshpro.app"
+  },
+  {
+    id: "Pixel Sorter",
+    name: "Pixel Sorter",
+    desc: "Image glitch tool that sorts pixels based on brightness and color intervals.",
+    url: "https://pixel-sorter.com"
+  },
+  {
+    id: "Hack Forums",
+    name: "Hack Forums",
+    desc: "Large online forum for hacker culture, tech discussions, and security topics.",
+    url: "https://hackforums.net"
+  },
+  {
+    id: "Tor Project",
+    name: "Tor Project",
+    desc: "Official site for Tor Browser, enabling anonymous browsing via onion routing.",
+    url: "https://www.torproject.org"
+  },
+  {
+    id: "Sacred Texts",
+    name: "Sacred Texts",
+    desc: "Massive library of religious, mythological, folklore, and occult books.",
+    url: "http://sacred-texts.com"
+  },
+  {
+    id: "Twilit Grotto Esoteric Archives",
+    name: "Twilit Grotto Esoteric Archives",
+    desc: "Collection of historical Western occult documents and manuscripts.",
+    url: "http://esotericarchives.com"
   }
+
 ];
 
 module.exports = pages;

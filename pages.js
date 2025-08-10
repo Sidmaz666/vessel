@@ -221,6 +221,12 @@ const pages = [
     url: "https://spiderfoot.net"
   },
   {
+    id: "Strudel",
+    name: "Strudel.CC",
+    desc: "With Strudel, you can expressively write dynamic music pieces. It is an official port of the Tidal Cycles pattern language to JavaScript.",
+    url: "https://strudel.cc/"
+  },
+  {
     id: "Shodan",
     name: "Shodan",
     desc: "Search engine for Internet-connected devices including webcams and servers.",

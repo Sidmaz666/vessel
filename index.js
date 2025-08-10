@@ -13,7 +13,7 @@ app.get('/', (req, res) => {
 });
 
 app.get('/pages', (req, res) => {
-    const allPages = pages.default
+    const allPages = pages
     const modPages = allPages.map(p => {
         return {
             id: p.id,
@@ -28,7 +28,7 @@ app.get('/pages', (req, res) => {
 
 app.get('/pages/:page', (req, res) => {
     const page = req.params.page;
-    const pageData = pages.default.find(p => p.id === page);
+    const pageData = pages.find(p => p.id === page);
     // If the url starts with https or http 
     if (pageData.url.startsWith('https://') || pageData.url.startsWith('http://')) {
         res.redirect(pageData.url);

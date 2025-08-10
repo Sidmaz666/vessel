@@ -180,4 +180,4 @@ const pages = [
   { id: 'final-node', name: 'Final Node', desc: 'The last hidden page with an epic 3D sequence revealing site\'s "truth"', url: '/final-node' }
 ];
 
-export default pages;
+module.exports = pages;

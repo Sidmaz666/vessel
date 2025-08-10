@@ -257,12 +257,6 @@ const pages = [
     url: "https://glitchartgenerator.com"
   },
   {
-    id: "PhotoMosh",
-    name: "PhotoMosh",
-    desc: "Glitch art web app to create distorted images and videos with visual effects.",
-    url: "https://moshpro.app"
-  },
-  {
     id: "Pixel Sorter",
     name: "Pixel Sorter",
     desc: "Image glitch tool that sorts pixels based on brightness and color intervals.",

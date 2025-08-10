@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glitched Clock - Vessel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            position: relative;
+        }
+
+        .clock-container {
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .time-display {
+            font-size: 8rem;
+            font-weight: bold;
+            letter-spacing: 0.1em;
+            position: relative;
+            display: inline-block;
+            text-shadow: 
+                0 0 10px #0f0,
+                0 0 20px #0f0,
+                0 0 30px #0f0;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 10px #0f0, 0 0 20px #0f0, 0 0 30px #0f0; }
+            to { text-shadow: 0 0 20px #0f0, 0 0 30px #0f0, 0 0 40px #0f0; }
+        }
+
+        .glitch {
+            animation: glitch 0.3s;
+        }
+
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            10% { transform: translate(-5px, -5px) skew(10deg); color: #f0f; }
+            20% { transform: translate(-5px, 5px) skew(-10deg); color: #ff0; }
+            30% { transform: translate(5px, 5px) skew(5deg); color: #0ff; }
+            40% { transform: translate(5px, -5px) skew(-5deg); color: #f00; }
+            50% { transform: translate(-5px, -5px) skew(15deg); color: #0f0; }
+            60% { transform: translate(-5px, 5px) skew(-15deg); color: #f0f; }
+            70% { transform: translate(5px, 5px) skew(8deg); color: #ff0; }
+            80% { transform: translate(5px, -5px) skew(-8deg); color: #0ff; }
+            90% { transform: translate(-5px, -5px) skew(12deg); color: #f00; }
+            100% { transform: translate(0); color: #0f0; }
+        }
+
+        .warp {
+            animation: warp 1s ease-in-out;
+        }
+
+        @keyframes warp {
+            0% { transform: scale(1) rotateX(0deg); }
+            25% { transform: scale(1.2, 0.8) rotateX(15deg); }
+            50% { transform: scale(0.8, 1.3) rotateX(-10deg); }
+            75% { transform: scale(1.1, 0.9) rotateX(8deg); }
+            100% { transform: scale(1) rotateX(0deg); }
+        }
+
+        .scramble {
+            animation: scramble 0.5s;
+        }
+
+        @keyframes scramble {
+            0%, 100% { filter: blur(0px); }
+            25% { filter: blur(3px) contrast(2); }
+            50% { filter: blur(5px) contrast(3) hue-rotate(90deg); }
+            75% { filter: blur(2px) contrast(1.5) hue-rotate(180deg); }
+        }
+
+        .date-display {
+            font-size: 1.5rem;
+            margin-top: 30px;
+            opacity: 0.8;
+            position: relative;
+        }
+
+        .timezone-display {
+            font-size: 1rem;
+            margin-top: 15px;
+            opacity: 0.6;
+        }
+
+        .glitch-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(255, 0, 255, 0.1) 2px,
+                    rgba(255, 0, 255, 0.1) 4px
+                );
+            pointer-events: none;
+            z-index: 1;
+            animation: scan-lines 0.1s linear infinite;
+        }
+
+        @keyframes scan-lines {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(4px); }
+        }
+
+        .background-noise {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.05;
+            z-index: 0;
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 255, 198, 0.3) 0%, transparent 50%);
+            animation: noise 0.2s infinite;
+        }
+
+        @keyframes noise {
+            0%, 100% { opacity: 0.05; }
+            50% { opacity: 0.1; }
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        .control-button {
+            background: transparent;
+            border: 1px solid #0f0;
+            color: #0f0;
+            padding: 8px 16px;
+            margin: 0 5px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            border-radius: 3px;
+            transition: all 0.3s;
+        }
+
+        .control-button:hover {
+            background: rgba(0, 255, 0, 0.1);
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+
+        .chaos-mode {
+            animation: chaos 0.1s infinite;
+        }
+
+        @keyframes chaos {
+            0% { 
+                transform: translate(0, 0) rotate(0deg) scale(1);
+                color: #0f0;
+                filter: hue-rotate(0deg);
+            }
+            25% { 
+                transform: translate(-3px, 2px) rotate(1deg) scale(1.02);
+                color: #f0f;
+                filter: hue-rotate(90deg);
+            }
+            50% { 
+                transform: translate(2px, -3px) rotate(-1deg) scale(0.98);
+                color: #ff0;
+                filter: hue-rotate(180deg);
+            }
+            75% { 
+                transform: translate(-2px, -2px) rotate(0.5deg) scale(1.01);
+                color: #0ff;
+                filter: hue-rotate(270deg);
+            }
+            100% { 
+                transform: translate(1px, 1px) rotate(-0.5deg) scale(0.99);
+                color: #f00;
+                filter: hue-rotate(360deg);
+            }
+        }
+
+        .format-display {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            font-size: 0.8rem;
+            opacity: 0.6;
+            text-align: right;
+        }
+
+        .error-text {
+            color: #f00;
+            animation: error-blink 0.5s infinite;
+        }
+
+        @keyframes error-blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        .corrupt-digit {
+            display: inline-block;
+            animation: corrupt 0.2s ease-out;
+        }
+
+        @keyframes corrupt {
+            0% { transform: scale(1); color: #0f0; }
+            50% { transform: scale(1.5); color: #f0f; }
+            100% { transform: scale(1); color: #0f0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-noise"></div>
+    <div class="glitch-overlay"></div>
+    
+    <div class="clock-container">
+        <div class="time-display" id="time-display">00:00:00</div>
+        <div class="date-display" id="date-display">Loading...</div>
+        <div class="timezone-display" id="timezone-display">UTC</div>
+    </div>
+
+    <div class="format-display">
+        <div>Format: <span id="format-type">12H</span></div>
+        <div>Glitch Level: <span id="glitch-level">Normal</span></div>
+        <div>System Time Integrity: <span id="integrity">97.3%</span></div>
+    </div>
+
+    <div class="controls">
+        <button class="control-button" onclick="glitchClock.toggleFormat()">Toggle 12/24H</button>
+        <button class="control-button" onclick="glitchClock.triggerGlitch()">Manual Glitch</button>
+        <button class="control-button" onclick="glitchClock.toggleChaos()">Chaos Mode</button>
+        <button class="control-button" onclick="glitchClock.reset()">Reset</button>
+    </div>
+
+    <script>
+        class GlitchedClock {
+            constructor() {
+                this.timeDisplay = document.getElementById('time-display');
+                this.dateDisplay = document.getElementById('date-display');
+                this.timezoneDisplay = document.getElementById('timezone-display');
+                this.formatType = document.getElementById('format-type');
+                this.glitchLevel = document.getElementById('glitch-level');
+                this.integrity = document.getElementById('integrity');
+                
+                this.is24Hour = false;
+                this.chaosMode = false;
+                this.glitchIntensity = 0.1;
+                this.timeIntegrity = 97.3;
+                this.lastGlitch = 0;
+                
+                this.glitchChars = ['█', '▓', '▒', '░', '╬', '╫', '╪', '┼', '∞', '§', '¤', '◊'];
+                this.timezones = ['UTC', 'GMT', 'EST', 'PST', 'CET', 'JST', '???', 'NULL', 'ERR'];
+                
+                this.start();
+                this.setupRandomGlitches();
+            }
+            
+            start() {
+                this.updateClock();
+                setInterval(() => {
+                    this.updateClock();
+                }, 1000);
+            }
+            
+            updateClock() {
+                const now = new Date();
+                
+                // Apply time corruption occasionally
+                if (Math.random() < this.glitchIntensity / 10) {
+                    this.corruptTime(now);
+                }
+                
+                // Format time
+                let hours = now.getHours();
+                let minutes = now.getMinutes();
+                let seconds = now.getSeconds();
+                let ampm = '';
+                
+                if (!this.is24Hour) {
+                    ampm = hours >= 12 ? ' PM' : ' AM';
+                    hours = hours % 12;
+                    hours = hours ? hours : 12;
+                }
+                
+                const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}${ampm}`;
+                
+                // Apply glitches to display
+                if (this.chaosMode || Math.random() < this.glitchIntensity) {
+                    this.displayCorruptedTime(timeString);
+                } else {
+                    this.timeDisplay.textContent = timeString;
+                }
+                
+                // Update date
+                const dateString = now.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                
+                if (Math.random() < this.glitchIntensity / 5) {
+                    this.dateDisplay.innerHTML = this.corruptText(dateString);
+                } else {
+                    this.dateDisplay.textContent = dateString;
+                }
+                
+                // Update timezone (occasionally corrupt)
+                if (Math.random() < this.glitchIntensity / 3) {
+                    this.timezoneDisplay.textContent = this.timezones[Math.floor(Math.random() * this.timezones.length)];
+                } else {
+                    this.timezoneDisplay.textContent = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                }
+                
+                // Update integrity
+                if (Math.random() < 0.1) {
+                    this.timeIntegrity += (Math.random() - 0.5) * 2;
+                    this.timeIntegrity = Math.max(0, Math.min(100, this.timeIntegrity));
+                    this.integrity.textContent = this.timeIntegrity.toFixed(1) + '%';
+                    
+                    if (this.timeIntegrity < 50) {
+                        this.integrity.className = 'error-text';
+                    } else {
+                        this.integrity.className = '';
+                    }
+                }
+            }
+            
+            displayCorruptedTime(timeString) {
+                let corrupted = '';
+                for (let i = 0; i < timeString.length; i++) {
+                    if (Math.random() < 0.1) {
+                        corrupted += `<span class="corrupt-digit">${this.glitchChars[Math.floor(Math.random() * this.glitchChars.length)]}</span>`;
+                    } else {
+                        corrupted += timeString[i];
+                    }
+                }
+                this.timeDisplay.innerHTML = corrupted;
+            }
+            
+            corruptTime(date) {
+                // Randomly corrupt time values
+                if (Math.random() < 0.3) {
+                    date.setHours(date.getHours() + Math.floor(Math.random() * 3) - 1);
+                }
+                if (Math.random() < 0.3) {
+                    date.setMinutes(date.getMinutes() + Math.floor(Math.random() * 10) - 5);
+                }
+                if (Math.random() < 0.5) {
+                    date.setSeconds(date.getSeconds() + Math.floor(Math.random() * 20) - 10);
+                }
+            }
+            
+            corruptText(text) {
+                let result = '';
+                for (let char of text) {
+                    if (Math.random() < 0.05) {
+                        result += this.glitchChars[Math.floor(Math.random() * this.glitchChars.length)];
+                    } else {
+                        result += char;
+                    }
+                }
+                return result;
+            }
+            
+            setupRandomGlitches() {
+                // Random visual glitches
+                setInterval(() => {
+                    if (Math.random() < this.glitchIntensity) {
+                        this.applyRandomEffect();
+                    }
+                }, 2000);
+                
+                // Intensity fluctuation
+                setInterval(() => {
+                    this.glitchIntensity += (Math.random() - 0.5) * 0.02;
+                    this.glitchIntensity = Math.max(0.01, Math.min(0.5, this.glitchIntensity));
+                    
+                    let level = 'Minimal';
+                    if (this.glitchIntensity > 0.1) level = 'Low';
+                    if (this.glitchIntensity > 0.2) level = 'Medium';
+                    if (this.glitchIntensity > 0.3) level = 'High';
+                    if (this.glitchIntensity > 0.4) level = 'CRITICAL';
+                    
+                    this.glitchLevel.textContent = level;
+                    
+                    if (level === 'CRITICAL') {
+                        this.glitchLevel.className = 'error-text';
+                    } else {
+                        this.glitchLevel.className = '';
+                    }
+                }, 5000);
+            }
+            
+            applyRandomEffect() {
+                const effects = ['glitch', 'warp', 'scramble'];
+                const effect = effects[Math.floor(Math.random() * effects.length)];
+                
+                this.timeDisplay.classList.add(effect);
+                setTimeout(() => {
+                    this.timeDisplay.classList.remove(effect);
+                }, effect === 'glitch' ? 300 : effect === 'warp' ? 1000 : 500);
+            }
+            
+            toggleFormat() {
+                this.is24Hour = !this.is24Hour;
+                this.formatType.textContent = this.is24Hour ? '24H' : '12H';
+            }
+            
+            triggerGlitch() {
+                // Prevent spam
+                const now = Date.now();
+                if (now - this.lastGlitch < 1000) return;
+                this.lastGlitch = now;
+                
+                // Intense glitch effect
+                this.timeDisplay.classList.add('glitch');
+                this.dateDisplay.classList.add('glitch');
+                
+                // Corrupt everything temporarily
+                this.glitchIntensity = 1;
+                this.timeIntegrity -= 10;
+                
+                setTimeout(() => {
+                    this.timeDisplay.classList.remove('glitch');
+                    this.dateDisplay.classList.remove('glitch');
+                    this.glitchIntensity = 0.1;
+                }, 2000);
+            }
+            
+            toggleChaos() {
+                this.chaosMode = !this.chaosMode;
+                
+                if (this.chaosMode) {
+                    this.timeDisplay.classList.add('chaos-mode');
+                    this.glitchLevel.textContent = 'CHAOS';
+                    this.glitchLevel.className = 'error-text';
+                } else {
+                    this.timeDisplay.classList.remove('chaos-mode');
+                    this.glitchLevel.textContent = 'Normal';
+                    this.glitchLevel.className = '';
+                }
+            }
+            
+            reset() {
+                this.chaosMode = false;
+                this.glitchIntensity = 0.1;
+                this.timeIntegrity = 97.3;
+                this.timeDisplay.className = 'time-display';
+                this.dateDisplay.className = 'date-display';
+                this.glitchLevel.textContent = 'Normal';
+                this.glitchLevel.className = '';
+                this.integrity.textContent = '97.3%';
+                this.integrity.className = '';
+            }
+        }
+        
+        // Initialize glitched clock
+        const glitchClock = new GlitchedClock();
+        
+        // Add some random screen corruption
+        setInterval(() => {
+            if (Math.random() < 0.05) {
+                document.body.style.filter = 'invert(1) hue-rotate(180deg)';
+                setTimeout(() => {
+                    document.body.style.filter = '';
+                }, 100);
+            }
+        }, 3000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,1799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terminal RPG - Vessel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            height: 100vh;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        .terminal-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-width: 1000px;
+            width: 100%;
+            margin: 0 auto;
+            border-left: 2px solid #333;
+            border-right: 2px solid #333;
+            overflow: hidden;
+        }
+
+        .terminal-header {
+            background: #111;
+            border-bottom: 1px solid #333;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .terminal-title {
+            color: #00ff00;
+            font-weight: bold;
+        }
+
+        .status-bar {
+            display: flex;
+            gap: 20px;
+            font-size: 12px;
+        }
+
+        .stat {
+            color: #ffff00;
+        }
+
+        .terminal-output {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            background: 
+                linear-gradient(transparent 50%, rgba(0, 255, 0, 0.03) 50%);
+            background-size: 100% 2px;
+            scrollbar-width: thin;
+            scrollbar-color: #00ff00 #000;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .terminal-output::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .terminal-output::-webkit-scrollbar-track {
+            background: #000;
+        }
+
+        .terminal-output::-webkit-scrollbar-thumb {
+            background: #00ff00;
+            border-radius: 4px;
+        }
+
+        .output-line {
+            margin-bottom: 5px;
+            line-height: 1.4;
+            position: relative;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            white-space: pre-wrap;
+            max-width: 100%;
+        }
+
+        .prompt {
+            color: #00ffff;
+        }
+
+        .error {
+            color: #ff4444;
+        }
+
+        .success {
+            color: #44ff44;
+        }
+
+        .warning {
+            color: #ffff44;
+        }
+
+        .story {
+            color: #ffffff;
+            margin: 10px 0;
+            font-style: italic;
+        }
+
+        .output-line.story.typing-effect {
+            word-break: break-word;
+            white-space: normal;
+        }
+
+        .system {
+            color: #888;
+            font-size: 12px;
+        }
+
+        .input-section {
+            background: #111;
+            border-top: 1px solid #333;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-prompt {
+            color: #00ff00;
+            margin-right: 10px;
+            white-space: nowrap;
+        }
+
+        .command-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 16px;
+            background: #00ff00;
+            animation: blink 1s infinite;
+            margin-left: 2px;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        .inventory-panel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            min-width: 200px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 100;
+            display: none;
+        }
+
+        .inventory-title {
+            color: #ffff00;
+            border-bottom: 1px solid #333;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+        }
+
+        .inventory-item {
+            margin: 5px 0;
+            padding: 3px 5px;
+            border-radius: 3px;
+            transition: background 0.3s;
+        }
+
+        .inventory-item:hover {
+            background: rgba(0, 255, 0, 0.1);
+        }
+
+        .help-panel {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 12px;
+            z-index: 100;
+            display: none;
+        }
+
+        .help-title {
+            color: #ffff00;
+            border-bottom: 1px solid #333;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .close-button {
+            color: #ff4444;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            padding: 0 5px;
+            border-radius: 3px;
+            transition: background 0.3s;
+        }
+
+        .close-button:hover {
+            background: rgba(255, 68, 68, 0.2);
+        }
+
+        .typing-effect {
+            overflow: hidden;
+            white-space: nowrap;
+            animation: typewriter 2s steps(40) 1 normal both;
+        }
+
+        @keyframes typewriter {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+
+        .choice-option {
+            color: #00ffff;
+            cursor: pointer;
+            padding: 2px 5px;
+            margin: 2px 0;
+            border-radius: 3px;
+            transition: all 0.3s;
+        }
+
+        .choice-option:hover {
+            background: rgba(0, 255, 255, 0.2);
+            transform: translateX(5px);
+        }
+
+        .ascii-art {
+            color: #666;
+            font-size: 10px;
+            line-height: 1;
+            margin: 10px 0;
+            white-space: pre;
+        }
+
+        .critical {
+            color: #ff0000;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @media (max-width: 768px) {
+            .terminal-container {
+                border: none;
+            }
+            
+            .inventory-panel, .help-panel {
+                position: relative;
+                top: auto;
+                right: auto;
+                bottom: auto;
+                left: auto;
+                margin: 10px;
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="terminal-container">
+        <div class="terminal-header">
+            <div class="terminal-title">VESSEL TERMINAL RPG v1.0</div>
+            <div class="status-bar">
+                <div class="stat">HP: <span id="hp">100</span>/100</div>
+                <div class="stat">XP: <span id="xp">0</span></div>
+                <div class="stat">Level: <span id="level">1</span></div>
+                <div class="stat">Credits: <span id="credits">50</span></div>
+            </div>
+        </div>
+
+        <div class="terminal-output" id="output">
+            <!-- Game output will be displayed here -->
+        </div>
+
+        <div class="input-section">
+            <span class="input-prompt">$</span>
+            <input type="text" class="command-input" id="command-input" autocomplete="off" autofocus>
+            <span class="cursor"></span>
+        </div>
+    </div>
+
+    <div class="inventory-panel" id="inventory-panel">
+        <div class="inventory-title">INVENTORY</div>
+        <div id="inventory-list">
+            <!-- Inventory items will be listed here -->
+        </div>
+    </div>
+
+    <div class="help-panel" id="help-panel">
+        <div class="help-title">
+            <span>COMMANDS</span>
+            <span class="close-button" id="close-help">&times;</span>
+        </div>
+        <div id="help-list">
+            <!-- Help content will be listed here -->
+        </div>
+    </div>
+
+    <script>
+        class TerminalRPG {
+            constructor() {
+                this.output = document.getElementById('output');
+                this.input = document.getElementById('command-input');
+                this.inventoryPanel = document.getElementById('inventory-panel');
+                this.inventoryList = document.getElementById('inventory-list');
+                this.helpPanel = document.getElementById('help-panel');
+                this.helpList = document.getElementById('help-list');
+                this.closeHelpButton = document.getElementById('close-help');
+                
+                this.player = {
+                    hp: 100,
+                    maxHp: 100,
+                    xp: 0,
+                    level: 1,
+                    credits: 50,
+                    inventory: ['data-pad', 'neural-link'],
+                    location: 'cyber-cafe',
+                    flags: {},
+                    quests: [],
+                    skills: {
+                        hacking: 1,
+                        combat: 1,
+                        stealth: 1,
+                        charisma: 1
+                    }
+                };
+                
+                this.currentRoom = null;
+                this.gameData = this.initializeGameData();
+                this.commandHistory = [];
+                this.historyIndex = -1;
+                this.inCombat = false;
+                this.currentEnemy = null;
+                
+                this.setupEventListeners();
+                this.startGame();
+            }
+            
+            initializeGameData() {
+                return {
+                    rooms: {
+                        'cyber-cafe': {
+                            name: 'The Cyber Café',
+                            description: 'A dimly lit café filled with the hum of servers and the glow of screens. Hackers and data-runners gather here to trade information and plan their next move. The air is thick with the smell of coffee and digital dreams.',
+                            exits: { 
+                                north: 'data-market', 
+                                east: 'hacker-den',
+                                south: 'street',
+                                west: 'back-alley'
+                            },
+                            items: ['encrypted-drive', 'coffee'],
+                            npcs: ['bartender-ai'],
+                            firstVisit: true
+                        },
+                        'data-market': {
+                            name: 'Data Market',
+                            description: 'A bustling digital marketplace where information is currency. Streams of data flow through holographic displays showing the latest intel prices. Neon signs flicker with real-time data feeds.',
+                            exits: { south: 'cyber-cafe', west: 'server-room', east: 'corp-hq' },
+                            items: ['credit-chip', 'scanner', 'data-crystal'],
+                            npcs: ['data-broker', 'info-merchant'],
+                            firstVisit: true
+                        },
+                        'hacker-den': {
+                            name: 'Underground Hacker Den',
+                            description: 'A secret hideout beneath the city streets. Multiple monitors show scrolling code and network diagrams. The air smells of ozone and determination. This is where the real hackers work.',
+                            exits: { west: 'cyber-cafe', north: 'server-room', east: 'neural-lab' },
+                            items: ['hacking-tool', 'security-badge', 'neural-interface'],
+                            npcs: ['elite-hacker', 'code-sage'],
+                            firstVisit: true
+                        },
+                        'server-room': {
+                            name: 'Corporate Server Room',
+                            description: 'Rows of humming servers stretch into the darkness. Security cameras track your every movement. One wrong step could trigger the alarm. The air is cold and sterile.',
+                            exits: { south: 'hacker-den', east: 'data-market', north: 'mainframe-core' },
+                            items: ['admin-key', 'security-codes'],
+                            npcs: ['security-ai', 'maintenance-bot'],
+                            firstVisit: true,
+                            dangerous: true
+                        },
+                        'street': {
+                            name: 'Neon Street',
+                            description: 'Rain-slicked streets reflect the neon signs of a cyberpunk city. Corporate towers loom overhead while shadows hide secrets in every alley. The sound of distant sirens echoes through the night.',
+                            exits: { north: 'cyber-cafe', east: 'corp-tower', west: 'slums', south: 'docks' },
+                            items: ['stim-pack', 'street-map'],
+                            npcs: ['street-contact', 'homeless-hacker'],
+                            firstVisit: true
+                        },
+                        'corp-tower': {
+                            name: 'MegaCorp Tower Lobby',
+                            description: 'A sterile corporate lobby with marble floors and armed security. Getting past the front desk will require more than luck. Everything here is designed to intimidate.',
+                            exits: { west: 'street', east: 'executive-floor', up: 'research-lab' },
+                            items: [],
+                            npcs: ['security-guard', 'corporate-exec', 'receptionist-ai'],
+                            firstVisit: true,
+                            restricted: true
+                        },
+                        'back-alley': {
+                            name: 'Back Alley',
+                            description: 'A narrow alley behind the cyber café. Graffiti covers the walls with cryptic messages and hacker symbols. This is where deals go down in the shadows.',
+                            exits: { east: 'cyber-cafe', north: 'underground-bunker' },
+                            items: ['graffiti-tag', 'hidden-cache'],
+                            npcs: ['alley-dealer'],
+                            firstVisit: true
+                        },
+                        'neural-lab': {
+                            name: 'Neural Interface Laboratory',
+                            description: 'A high-tech laboratory filled with neural interface equipment. Holographic displays show brain activity patterns. This is cutting-edge technology that could change everything.',
+                            exits: { west: 'hacker-den', north: 'research-lab' },
+                            items: ['neural-enhancer', 'brain-scanner'],
+                            npcs: ['neural-scientist', 'lab-assistant'],
+                            firstVisit: true,
+                            restricted: true
+                        },
+                        'mainframe-core': {
+                            name: 'Mainframe Core',
+                            description: 'The heart of the corporate network. Massive servers pulse with data, and security systems are at their highest alert level. This is where the real secrets are stored.',
+                            exits: { south: 'server-room' },
+                            items: ['master-key', 'corporate-secrets'],
+                            npcs: ['core-ai'],
+                            firstVisit: true,
+                            dangerous: true,
+                            restricted: true
+                        },
+                        'slums': {
+                            name: 'The Slums',
+                            description: 'A maze of makeshift shelters and broken dreams. The air is thick with despair and determination. Here, people fight for survival and sometimes find unexpected allies.',
+                            exits: { east: 'street', north: 'underground-bunker' },
+                            items: ['scrap-metal', 'hope-token'],
+                            npcs: ['slum-leader', 'desperate-hacker'],
+                            firstVisit: true
+                        },
+                        'docks': {
+                            name: 'Industrial Docks',
+                            description: 'Massive cargo ships and industrial equipment line the waterfront. The air smells of salt and oil. This is where illegal goods enter and leave the city.',
+                            exits: { north: 'street', east: 'warehouse' },
+                            items: ['cargo-manifest', 'smuggled-tech'],
+                            npcs: ['dock-worker', 'smuggler'],
+                            firstVisit: true
+                        },
+                        'warehouse': {
+                            name: 'Abandoned Warehouse',
+                            description: 'A massive warehouse filled with forgotten equipment and hidden treasures. The shadows hide secrets and dangers. This place has seen better days.',
+                            exits: { west: 'docks', north: 'corp-hq' },
+                            items: ['old-computer', 'hidden-stash'],
+                            npcs: ['warehouse-ghost'],
+                            firstVisit: true,
+                            dangerous: true
+                        },
+                        'corp-hq': {
+                            name: 'Corporate Headquarters',
+                            description: 'The nerve center of corporate power. Everything here is designed to impress and intimidate. Getting in here means you\'re either very important or very foolish.',
+                            exits: { west: 'data-market', south: 'warehouse', east: 'executive-floor' },
+                            items: ['corporate-id', 'access-codes'],
+                            npcs: ['corporate-spy', 'security-chief'],
+                            firstVisit: true,
+                            restricted: true
+                        },
+                        'executive-floor': {
+                            name: 'Executive Floor',
+                            description: 'Luxurious offices where corporate decisions are made. The air is thick with power and ambition. Here, the fate of millions is decided over coffee and contracts.',
+                            exits: { west: 'corp-tower', south: 'corp-hq' },
+                            items: ['executive-key', 'classified-documents'],
+                            npcs: ['ceo', 'board-member'],
+                            firstVisit: true,
+                            restricted: true
+                        },
+                        'research-lab': {
+                            name: 'Research Laboratory',
+                            description: 'State-of-the-art research facilities where the future is being built. Holographic displays show breakthrough technologies. This is where innovation meets corporate greed.',
+                            exits: { down: 'corp-tower', south: 'neural-lab' },
+                            items: ['research-data', 'prototype-device'],
+                            npcs: ['lead-scientist', 'research-ai'],
+                            firstVisit: true,
+                            restricted: true
+                        },
+                        'underground-bunker': {
+                            name: 'Underground Bunker',
+                            description: 'A hidden bunker beneath the city streets. This is where the resistance plans their moves against corporate tyranny. The air is thick with rebellion and hope.',
+                            exits: { south: 'back-alley', east: 'slums' },
+                            items: ['resistance-manual', 'freedom-pamphlet'],
+                            npcs: ['resistance-leader', 'freedom-fighter'],
+                            firstVisit: true
+                        }
+                    },
+                    items: {
+                        'data-pad': { name: 'Data Pad', description: 'A standard issue data pad for storing information.', usable: true },
+                        'neural-link': { name: 'Neural Link', description: 'A direct interface to the global network.', usable: true },
+                        'encrypted-drive': { name: 'Encrypted Drive', description: 'Contains classified corporate data.', value: 100 },
+                        'credit-chip': { name: 'Credit Chip', description: 'Contains 75 credits.', value: 75, consumable: true },
+                        'scanner': { name: 'Security Scanner', description: 'Detects hidden security measures.', usable: true },
+                        'hacking-tool': { name: 'Advanced Hacking Tool', description: 'Military-grade ICE breaker.', usable: true },
+                        'security-badge': { name: 'Security Badge', description: 'Allows access to restricted areas.', usable: true },
+                        'admin-key': { name: 'Admin Keycard', description: 'Master access to corporate systems.', usable: true },
+                        'stim-pack': { name: 'Stim Pack', description: 'Restores 50 HP when used.', consumable: true, healing: 50 },
+                        'coffee': { name: 'Coffee', description: 'A cup of coffee to keep you awake.', consumable: true, healing: 10 },
+                        'data-crystal': { name: 'Data Crystal', description: 'A rare crystal containing valuable data.', value: 200 },
+                        'neural-interface': { name: 'Neural Interface', description: 'A device for interfacing with neural networks.', usable: true },
+                        'security-codes': { name: 'Security Codes', description: 'A set of codes for accessing restricted areas.', usable: true },
+                        'master-key': { name: 'Master Key', description: 'Allows access to the mainframe core.', usable: true },
+                        'corporate-secrets': { name: 'Corporate Secrets', description: 'A collection of confidential corporate documents.', value: 500 },
+                        'street-map': { name: 'Street Map', description: 'A detailed map of the city streets.', usable: true },
+                        'neural-enhancer': { name: 'Neural Enhancer', description: 'A device that enhances neural processing capabilities.', usable: true },
+                        'brain-scanner': { name: 'Brain Scanner', description: 'A device for scanning brain activity patterns.', usable: true },
+                        'scrap-metal': { name: 'Scrap Metal', description: 'Rusted metal scraps from old equipment.', value: 5 },
+                        'hope-token': { name: 'Hope Token', description: 'A token of resistance, found in the slums.', value: 10 },
+                        'cargo-manifest': { name: 'Cargo Manifest', description: 'A manifest listing cargo for a ship.', usable: true },
+                        'smuggled-tech': { name: 'Smuggled Tech', description: 'A device that bypasses security systems.', usable: true },
+                        'old-computer': { name: 'Old Computer', description: 'A functional computer from a bygone era.', usable: true },
+                        'hidden-stash': { name: 'Hidden Stash', description: 'A hidden compartment containing valuable items.', value: 100 },
+                        'corporate-id': { name: 'Corporate ID', description: 'A card identifying you as a corporate employee.', usable: true },
+                        'access-codes': { name: 'Access Codes', description: 'A set of codes for accessing restricted areas.', usable: true },
+                        'classified-documents': { name: 'Classified Documents', description: 'A collection of confidential corporate documents.', value: 200 },
+                        'research-data': { name: 'Research Data', description: 'A collection of valuable research findings.', value: 300 },
+                        'prototype-device': { name: 'Prototype Device', description: 'A cutting-edge prototype device.', value: 500 },
+                        'resistance-manual': { name: 'Resistance Manual', description: 'Instructions for resisting corporate oppression.', usable: true },
+                        'freedom-pamphlet': { name: 'Freedom Pamphlet', description: 'A pamphlet promoting freedom and resistance.', usable: true },
+                        'graffiti-tag': { name: 'Graffiti Tag', description: 'A tag left by a local hacker.', usable: true },
+                        'hidden-cache': { name: 'Hidden Cache', description: 'A hidden compartment containing valuable items.', value: 150 },
+                        'security-clearance': { name: 'Security Clearance Chip', description: 'A chip that grants access to restricted corporate areas.', usable: true },
+                        'warehouse-ghost': { name: 'Warehouse Ghost', description: 'A ghostly figure that haunts the abandoned warehouse.', hostile: true, hp: 50 }
+                    },
+                    npcs: {
+                        'bartender-ai': { 
+                            name: 'Bartender AI', 
+                            dialogue: [
+                                "Welcome to the Cyber Café, meat. What'll it be?",
+                                "Word on the street is MegaCorp's mainframe has new vulnerabilities.",
+                                "That neural link of yours needs an upgrade. I know a guy..."
+                            ],
+                            hostile: false
+                        },
+                        'data-broker': { 
+                            name: 'Data Broker', 
+                            dialogue: [
+                                "Got any hot data to trade?",
+                                "I'm buying encrypted drives at premium rates.",
+                                "Corporate secrets are worth their weight in credits."
+                            ],
+                            hostile: false,
+                            trader: true
+                        },
+                        'elite-hacker': { 
+                            name: 'Elite Hacker', 
+                            dialogue: [
+                                "You look like you could use some training.",
+                                "The real money is in corporate infiltration.",
+                                "Stay out of the server room without proper gear."
+                            ],
+                            hostile: false,
+                            trainer: true
+                        },
+                        'security-ai': { 
+                            name: 'Security AI', 
+                            dialogue: [
+                                "INTRUDER DETECTED. INITIATING COUNTERMEASURES.",
+                                "Your security clearance is insufficient.",
+                                "Comply or face deletion."
+                            ],
+                            hostile: true,
+                            hp: 80
+                        },
+                        'street-contact': { 
+                            name: 'Street Contact', 
+                            dialogue: [
+                                "Psst... need info on MegaCorp's security?",
+                                "For the right price, I can get you inside.",
+                                "That tower's locked down tight, but I know a way."
+                            ],
+                            hostile: false,
+                            informant: true
+                        },
+                        'security-guard': { 
+                            name: 'Security Guard', 
+                            dialogue: [
+                                "Badge and ID, please.",
+                                "This is a restricted area.",
+                                "Move along, citizen."
+                            ],
+                            hostile: false,
+                            guard: true
+                        },
+                        'corporate-exec': { 
+                            name: 'Corporate Executive', 
+                            dialogue: [
+                                "Another data-runner trying to make it big?",
+                                "MegaCorp always needs... independent contractors.",
+                                "Careful who you trust in this business."
+                            ],
+                            hostile: false,
+                            questGiver: true
+                        },
+                        'info-merchant': {
+                            name: 'Info Merchant',
+                            dialogue: [
+                                "Need the latest intel on corporate threats?",
+                                "I've got the dirt on MegaCorp's latest exploits.",
+                                "The right price and I'll share it."
+                            ],
+                            hostile: false,
+                            trader: true
+                        },
+                        'code-sage': {
+                            name: 'Code Sage',
+                            dialogue: [
+                                "You've got a knack for code. Want to learn some advanced techniques?",
+                                "The real power lies in understanding the underlying architecture.",
+                                "I can teach you how to manipulate data streams."
+                            ],
+                            hostile: false,
+                            trainer: true
+                        },
+                        'neural-scientist': {
+                            name: 'Neural Scientist',
+                            dialogue: [
+                                "Welcome to the Neural Interface Laboratory. We're on the cutting edge of brain-computer integration.",
+                                "The human brain is a complex system. Understanding it is key to unlocking new possibilities.",
+                                "I'm working on a breakthrough that could revolutionize human cognition."
+                            ],
+                            hostile: false
+                        },
+                        'lab-assistant': {
+                            name: 'Lab Assistant',
+                            dialogue: [
+                                "I'm here to help with research. What can I do for you?",
+                                "The lead scientist is currently occupied. He's working on a new neural interface.",
+                                "I can assist with data analysis and maintenance."
+                            ],
+                            hostile: false
+                        },
+                        'lead-scientist': {
+                            name: 'Lead Scientist',
+                            dialogue: [
+                                "Welcome to the Research Laboratory. We're pushing the boundaries of human technology.",
+                                "The prototype device we're developing could revolutionize how we interact with digital systems.",
+                                "I'm excited about the potential of this neural interface."
+                            ],
+                            hostile: false
+                        },
+                        'research-ai': {
+                            name: 'Research AI',
+                            dialogue: [
+                                "I'm here to assist with research and data analysis.",
+                                "I can help you find specific information or analyze patterns.",
+                                "I'm constantly learning and improving."
+                            ],
+                            hostile: false
+                        },
+                        'core-ai': {
+                            name: 'Core AI',
+                            dialogue: [
+                                "Welcome to the Mainframe Core. I'm the heart of corporate control.",
+                                "Everything here is monitored and protected. No unauthorized access.",
+                                "I'm here to ensure the integrity of the global network."
+                            ],
+                            hostile: true,
+                            hp: 100
+                        },
+                        'slum-leader': {
+                            name: 'Slum Leader',
+                            dialogue: [
+                                "We're the resistance, brother. MegaCorp is corrupt. We fight for freedom.",
+                                "The city's infrastructure is crumbling. We need to rebuild.",
+                                "Join us and we'll show you the true power of the people."
+                            ],
+                            hostile: false,
+                            questGiver: true
+                        },
+                        'desperate-hacker': {
+                            name: 'Desperate Hacker',
+                            dialogue: [
+                                "I'm desperate, man. I need money. I'll do anything for a fix.",
+                                "I heard you're a hacker. Can you help me get into the tower?",
+                                "I'll sell you my soul for a chance at freedom."
+                            ],
+                            hostile: false,
+                            informant: true
+                        },
+                        'dock-worker': {
+                            name: 'Dock Worker',
+                            dialogue: [
+                                "I'm just a worker, man. I don't know much about the big picture.",
+                                "I've seen some shady stuff going on at the docks. Smuggled tech, illegal cargo.",
+                                "I'm not a fighter, but I'm not gonna stand by and watch."
+                            ],
+                            hostile: false,
+                            informant: true
+                        },
+                        'smuggler': {
+                            name: 'Smuggler',
+                            dialogue: [
+                                "I'm just doing my job, man. I'm not a fighter. I just transport goods.",
+                                "I've got a ship leaving for the docks. I can smuggle you out if you're willing to pay.",
+                                "I'm not a fighter, but I'm not gonna stand by and watch."
+                            ],
+                            hostile: false,
+                            informant: true
+                        },
+                        'corporate-spy': {
+                            name: 'Corporate Spy',
+                            dialogue: [
+                                "I'm here to observe. I'm not a fighter. I just report back to HQ.",
+                                "I've infiltrated the resistance. I'm gathering intel on their plans.",
+                                "I'm not a fighter, but I'm not gonna stand by and watch."
+                            ],
+                            hostile: false,
+                            informant: true
+                        },
+                        'security-chief': {
+                            name: 'Security Chief',
+                            dialogue: [
+                                "I'm the head of security. I'm not a fighter. I just manage the guards.",
+                                "I've got eyes everywhere. I'm watching you.",
+                                "I'm not a fighter, but I'm not gonna stand by and watch."
+                            ],
+                            hostile: false,
+                            guard: true
+                        },
+                        'ceo': {
+                            name: 'CEO',
+                            dialogue: [
+                                "Welcome to MegaCorp. Everything we do is for the greater good.",
+                                "We're the leaders of tomorrow. We're the future.",
+                                "I'm not a fighter, but I'm not gonna stand by and watch."
+                            ],
+                            hostile: false,
+                            questGiver: true
+                        },
+                        'board-member': {
+                            name: 'Board Member',
+                            dialogue: [
+                                "I'm here to oversee the company. I'm not a fighter.",
+                                "I've got eyes everywhere. I'm watching you.",
+                                "I'm not a fighter, but I'm not gonna stand by and watch."
+                            ],
+                            hostile: false,
+                            questGiver: true
+                        },
+                        'receptionist-ai': {
+                            name: 'Receptionist AI',
+                            dialogue: [
+                                "Welcome to MegaCorp. How can I assist you today?",
+                                "I'm here to manage the front desk. I'm not a fighter.",
+                                "I've got eyes everywhere. I'm watching you."
+                            ],
+                            hostile: false,
+                            guard: true
+                        },
+                        'resistance-leader': {
+                            name: 'Resistance Leader',
+                            dialogue: [
+                                "We're the resistance, brother. MegaCorp is corrupt. We fight for freedom.",
+                                "The city's infrastructure is crumbling. We need to rebuild.",
+                                "Join us and we'll show you the true power of the people."
+                            ],
+                            hostile: false,
+                            questGiver: true
+                        },
+                        'freedom-fighter': {
+                            name: 'Freedom Fighter',
+                            dialogue: [
+                                "I'm fighting for freedom, brother. MegaCorp is oppressive. We need to overthrow them.",
+                                "The city's infrastructure is crumbling. We need to rebuild.",
+                                "Join us and we'll show you the true power of the people."
+                            ],
+                            hostile: false,
+                            questGiver: true
+                        },
+                        'alley-dealer': {
+                            name: 'Alley Dealer',
+                            dialogue: [
+                                "Psst... need info on MegaCorp's security?",
+                                "For the right price, I can get you inside.",
+                                "That tower's locked down tight, but I know a way."
+                            ],
+                            hostile: false,
+                            informant: true
+                        }
+                    }
+                };
+            }
+            
+            setupEventListeners() {
+                this.input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        this.processCommand();
+                    } else if (e.key === 'ArrowUp') {
+                        this.navigateHistory(-1);
+                        e.preventDefault();
+                    } else if (e.key === 'ArrowDown') {
+                        this.navigateHistory(1);
+                        e.preventDefault();
+                    }
+                });
+                
+                // Toggle inventory with Tab
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Tab') {
+                        e.preventDefault();
+                        this.toggleInventory();
+                    }
+                });
+
+                // Toggle help with Shift+Tab
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Tab' && e.shiftKey) {
+                        e.preventDefault();
+                        this.toggleHelp();
+                    }
+                });
+
+                // Close help panel
+                this.closeHelpButton.addEventListener('click', () => {
+                    this.toggleHelp();
+                });
+            }
+            
+            startGame() {
+                this.printAsciiTitle();
+                this.addOutput('', 'system');
+                this.addOutput('Welcome to VESSEL Terminal RPG', 'success');
+                this.addOutput('A cyberpunk text adventure in the digital underground', 'story');
+                this.addOutput('', 'system');
+                this.addOutput('Type "help" for commands or "look" to examine your surroundings.', 'system');
+                this.addOutput('Press TAB to toggle inventory, Shift+TAB for help.', 'system');
+                this.addOutput('', 'system');
+                this.addOutput('🎮 GAME TIPS:', 'warning');
+                this.addOutput('• Explore all areas to find hidden items and NPCs', 'system');
+                this.addOutput('• Talk to NPCs to learn about quests and trading', 'system');
+                this.addOutput('• Use items strategically - some are consumable', 'system');
+                this.addOutput('• Be careful in dangerous areas - combat can be deadly', 'system');
+                this.addOutput('• Save your game regularly to preserve progress', 'system');
+                this.addOutput('', 'system');
+                
+                this.currentRoom = this.gameData.rooms[this.player.location];
+                this.lookAround();
+            }
+            
+            printAsciiTitle() {
+                const ascii = `
+╦  ╦╔═╗╔═╗╔═╗╔═╗╦    
+╚╗╔╝║╣ ╚═╗╚═╗║╣ ║    
+ ╚╝ ╚═╝╚═╝╚═╝╚═╝╩═╝  
+Terminal RPG v1.0`;
+                this.addOutput(ascii, 'ascii-art');
+            }
+            
+            addOutput(text, className = '') {
+                const line = document.createElement('div');
+                line.className = `output-line ${className}`;
+                
+                if (className === 'story' && text.length > 50) {
+                    line.classList.add('typing-effect');
+                }
+                
+                line.textContent = text;
+                this.output.appendChild(line);
+                this.output.scrollTop = this.output.scrollHeight;
+            }
+            
+            processCommand() {
+                const command = this.input.value.trim().toLowerCase();
+                if (!command) return;
+                
+                this.addOutput(`$ ${command}`, 'prompt');
+                this.commandHistory.unshift(command);
+                this.historyIndex = -1;
+                
+                const parts = command.split(' ');
+                const action = parts[0];
+                const target = parts.slice(1).join(' ');
+                
+                this.executeCommand(action, target);
+                this.input.value = '';
+            }
+            
+            executeCommand(action, target) {
+                // Check if we're in combat first
+                if (this.inCombat && this.processCombatCommand(action)) {
+                    return;
+                }
+                
+                // Handle special commands
+                if (action === 'sell' && target === 'drive' && this.hasItem('encrypted-drive')) {
+                    this.sellEncryptedDrive();
+                    return;
+                }
+                
+                if (action === 'sell' && target === 'secrets' && this.hasItem('corporate-secrets')) {
+                    this.sellCorporateSecrets();
+                    return;
+                }
+                
+                if (action === 'accept' && target === 'quest' && this.player.flags.corporateQuest) {
+                    this.acceptCorporateQuest();
+                    return;
+                }
+                
+                switch (action) {
+                    case 'help':
+                        this.showHelp();
+                        break;
+                    case 'look':
+                    case 'l':
+                        if (target) {
+                            this.examine(target);
+                        } else {
+                            this.lookAround();
+                        }
+                        break;
+                    case 'go':
+                    case 'move':
+                    case 'north':
+                    case 'south':
+                    case 'east':
+                    case 'west':
+                    case 'up':
+                    case 'down':
+                        const direction = action === 'go' || action === 'move' ? target : action;
+                        this.move(direction);
+                        break;
+                    case 'take':
+                    case 'get':
+                        this.takeItem(target);
+                        break;
+                    case 'use':
+                        this.useItem(target);
+                        break;
+                    case 'inventory':
+                    case 'inv':
+                    case 'i':
+                        this.showInventory();
+                        break;
+                    case 'status':
+                    case 'stats':
+                        this.showStatus();
+                        break;
+                    case 'talk':
+                    case 'speak':
+                        this.talkToNpc(target);
+                        break;
+                    case 'attack':
+                    case 'fight':
+                        this.attackNpc(target);
+                        break;
+                    case 'quests':
+                        this.showQuests();
+                        break;
+                    case 'skills':
+                        this.showSkills();
+                        break;
+                    case 'trade':
+                        this.tradeWithNpc(target);
+                        break;
+                    case 'save':
+                        this.saveGame();
+                        break;
+                    case 'load':
+                        this.loadGame();
+                        break;
+                    case 'restart':
+                        this.restartGame();
+                        break;
+                    case 'quit':
+                    case 'exit':
+                        this.quitGame();
+                        return;
+                    default:
+                        this.addOutput(`Unknown command: ${action}. Type "help" for available commands.`, 'error');
+                }
+            }
+            
+            sellEncryptedDrive() {
+                this.addOutput('You sell the encrypted drive to the data broker for 150 credits.', 'success');
+                this.addCredits(150);
+                this.removeItem('encrypted-drive');
+                this.gainXp(25);
+                this.updateInventoryDisplay();
+            }
+            
+            sellCorporateSecrets() {
+                this.addOutput('You sell the corporate secrets to the data broker for 600 credits!', 'success');
+                this.addCredits(600);
+                this.removeItem('corporate-secrets');
+                this.gainXp(100);
+                this.updateInventoryDisplay();
+            }
+            
+            acceptCorporateQuest() {
+                this.addOutput('You accept the corporate infiltration mission.', 'success');
+                this.addOutput('The executive hands you a security clearance chip.', 'story');
+                this.player.inventory.push('security-clearance');
+                this.updateInventoryDisplay();
+                this.gainXp(50);
+            }
+            
+            lookAround() {
+                const room = this.currentRoom;
+                this.addOutput(room.name, 'success');
+                this.addOutput(room.description, 'story');
+                
+                if (room.exits) {
+                    const exits = Object.keys(room.exits).join(', ');
+                    this.addOutput(`Exits: ${exits}`, 'system');
+                }
+                
+                if (room.items && room.items.length > 0) {
+                    this.addOutput(`Items: ${room.items.join(', ')}`, 'warning');
+                }
+                
+                if (room.npcs && room.npcs.length > 0) {
+                    const npcs = room.npcs.map(npc => this.gameData.npcs[npc].name).join(', ');
+                    this.addOutput(`NPCs: ${npcs}`, 'prompt');
+                }
+                
+                if (room.dangerous && !this.player.flags.warnedDangerous) {
+                    this.addOutput('⚠️  WARNING: This area is dangerous!', 'critical');
+                    this.player.flags.warnedDangerous = true;
+                }
+                
+                if (room.restricted && !this.hasItem('security-badge')) {
+                    this.addOutput('🚫 RESTRICTED AREA - Security Badge Required', 'error');
+                }
+            }
+            
+            move(direction) {
+                if (!this.currentRoom.exits || !this.currentRoom.exits[direction]) {
+                    this.addOutput(`You can't go ${direction} from here.`, 'error');
+                    return;
+                }
+                
+                const newLocationId = this.currentRoom.exits[direction];
+                const newRoom = this.gameData.rooms[newLocationId];
+                
+                // Check restrictions
+                if (newRoom.restricted && !this.hasItem('security-badge') && !this.hasItem('security-clearance')) {
+                    this.addOutput('Access denied. Security clearance required.', 'error');
+                    return;
+                }
+                
+                this.player.location = newLocationId;
+                this.currentRoom = newRoom;
+                
+                this.addOutput(`You move ${direction}...`, 'system');
+                this.addOutput('', 'system');
+                
+                if (newRoom.firstVisit) {
+                    this.gainXp(10);
+                    newRoom.firstVisit = false;
+                    this.addOutput('📍 NEW AREA DISCOVERED!', 'success');
+                }
+                
+                this.lookAround();
+                
+                // Random encounters in dangerous areas
+                if (newRoom.dangerous && Math.random() < 0.3) {
+                    this.triggerRandomEncounter();
+                }
+                
+                // Ambient effects
+                this.triggerAmbientEffect();
+            }
+            
+            triggerAmbientEffect() {
+                const effects = [
+                    'The air hums with digital energy.',
+                    'Neon lights flicker in the distance.',
+                    'You hear the distant sound of data streams.',
+                    'A cool breeze carries the scent of ozone.',
+                    'Shadows dance across the walls.',
+                    'The ground vibrates with hidden machinery.',
+                    'Electronic whispers echo through the air.',
+                    'A holographic advertisement flickers to life.',
+                    'The sound of footsteps echoes from somewhere.',
+                    'A data terminal hums softly nearby.'
+                ];
+                
+                if (Math.random() < 0.4) {
+                    const effect = effects[Math.floor(Math.random() * effects.length)];
+                    this.addOutput(effect, 'story');
+                }
+            }
+            
+            takeItem(itemId) {
+                if (!itemId) {
+                    this.addOutput('Take what?', 'error');
+                    return;
+                }
+                
+                const normalizedId = itemId.replace(/\s+/g, '-');
+                
+                if (!this.currentRoom.items.includes(normalizedId)) {
+                    this.addOutput(`There's no ${itemId} here.`, 'error');
+                    return;
+                }
+                
+                this.currentRoom.items = this.currentRoom.items.filter(item => item !== normalizedId);
+                this.player.inventory.push(normalizedId);
+                
+                const item = this.gameData.items[normalizedId];
+                this.addOutput(`You take the ${item.name}.`, 'success');
+                
+                if (item.value) {
+                    this.addOutput(`It might be worth ${item.value} credits.`, 'system');
+                }
+                
+                this.updateInventoryDisplay();
+            }
+            
+            useItem(itemId) {
+                if (!itemId) {
+                    this.addOutput('Use what?', 'error');
+                    return;
+                }
+                
+                const normalizedId = itemId.replace(/\s+/g, '-');
+                
+                if (!this.hasItem(normalizedId)) {
+                    this.addOutput(`You don't have a ${itemId}.`, 'error');
+                    return;
+                }
+                
+                const item = this.gameData.items[normalizedId];
+                
+                if (!item.usable && !item.consumable) {
+                    this.addOutput(`You can't use the ${item.name}.`, 'error');
+                    return;
+                }
+                
+                this.addOutput(`You use the ${item.name}.`, 'success');
+                
+                // Handle specific item effects
+                switch (normalizedId) {
+                    case 'stim-pack':
+                        this.heal(item.healing);
+                        this.removeItem(normalizedId);
+                        break;
+                    case 'credit-chip':
+                        this.addCredits(item.value);
+                        this.removeItem(normalizedId);
+                        break;
+                    case 'scanner':
+                        this.scanArea();
+                        break;
+                    case 'neural-link':
+                        this.accessNetwork();
+                        break;
+                    case 'neural-enhancer':
+                        this.enhanceNeuralProcessing();
+                        this.removeItem(normalizedId);
+                        break;
+                    case 'brain-scanner':
+                        this.scanBrainActivity();
+                        this.removeItem(normalizedId);
+                        break;
+                    case 'resistance-manual':
+                        this.readResistanceManual();
+                        this.removeItem(normalizedId);
+                        break;
+                    case 'freedom-pamphlet':
+                        this.readFreedomPamphlet();
+                        this.removeItem(normalizedId);
+                        break;
+                    case 'old-computer':
+                        this.useOldComputer();
+                        this.removeItem(normalizedId);
+                        break;
+                    case 'hidden-stash':
+                        this.findHiddenStash();
+                        this.removeItem(normalizedId);
+                        break;
+                    default:
+                        this.addOutput(`The ${item.name} hums with activity.`, 'system');
+                }
+                
+                this.updateInventoryDisplay();
+            }
+            
+            talkToNpc(npcId) {
+                if (!npcId) {
+                    if (this.currentRoom.npcs && this.currentRoom.npcs.length === 1) {
+                        npcId = this.currentRoom.npcs[0];
+                    } else {
+                        this.addOutput('Talk to whom?', 'error');
+                        return;
+                    }
+                } else {
+                    npcId = npcId.replace(/\s+/g, '-');
+                }
+                
+                if (!this.currentRoom.npcs.includes(npcId)) {
+                    this.addOutput(`There's no ${npcId} here.`, 'error');
+                    return;
+                }
+                
+                const npc = this.gameData.npcs[npcId];
+                const dialogue = npc.dialogue[Math.floor(Math.random() * npc.dialogue.length)];
+                
+                this.addOutput(`${npc.name}: "${dialogue}"`, 'prompt');
+                
+                // Special NPC interactions
+                if (npc.trader && this.hasItem('encrypted-drive')) {
+                    this.addOutput('The broker eyes your encrypted drive with interest.', 'warning');
+                    this.addOutput('Type "trade drive" to sell it for credits.', 'system');
+                }
+                
+                if (npc.questGiver && !this.player.flags.corporateQuest) {
+                    this.offerCorporateQuest();
+                }
+            }
+            
+            showInventory() {
+                this.addOutput('INVENTORY:', 'warning');
+                if (this.player.inventory.length === 0) {
+                    this.addOutput('  (empty)', 'system');
+                } else {
+                    this.player.inventory.forEach(itemId => {
+                        const item = this.gameData.items[itemId];
+                        this.addOutput(`  ${item.name} - ${item.description}`, 'system');
+                    });
+                }
+            }
+            
+            showStatus() {
+                this.addOutput('PLAYER STATUS:', 'warning');
+                this.addOutput(`  Health: ${this.player.hp}/${this.player.maxHp}`, 'system');
+                this.addOutput(`  Experience: ${this.player.xp}`, 'system');
+                this.addOutput(`  Level: ${this.player.level}`, 'system');
+                this.addOutput(`  Credits: ${this.player.credits}`, 'system');
+                this.addOutput(`  Location: ${this.currentRoom.name}`, 'system');
+                this.addOutput(`  Skills: Hacking: ${this.player.skills.hacking}, Combat: ${this.player.skills.combat}, Stealth: ${this.player.skills.stealth}, Charisma: ${this.player.skills.charisma}`, 'system');
+                this.addOutput(`  Quests: ${this.player.quests.length} active`, 'system');
+            }
+            
+            showHelp() {
+                this.helpList.innerHTML = '';
+                this.addOutput('AVAILABLE COMMANDS:', 'warning');
+                this.addOutput('  look [item]     - Examine surroundings or specific item', 'system');
+                this.addOutput('  go [direction]  - Move north, south, east, or west', 'system');
+                this.addOutput('  take [item]     - Pick up an item', 'system');
+                this.addOutput('  use [item]      - Use an item from inventory', 'system');
+                this.addOutput('  talk [npc]      - Speak with NPCs', 'system');
+                this.addOutput('  attack [npc]    - Combat (be careful!)', 'system');
+                this.addOutput('  inventory       - Show your items', 'system');
+                this.addOutput('  status          - Show player stats', 'system');
+                this.addOutput('  quests          - Show active quests', 'system');
+                this.addOutput('  skills          - Show your skills', 'system');
+                this.addOutput('  trade [npc]     - Trade with NPCs', 'system');
+                this.addOutput('  save/load       - Save or load game', 'system');
+                this.addOutput('  restart         - Start a new game', 'system');
+                this.addOutput('  quit            - Exit the game', 'system');
+                
+                // Populate help panel
+                const helpContent = [
+                    'BASIC COMMANDS:',
+                    'look [item] - Examine surroundings or specific item',
+                    'go [direction] - Move north, south, east, or west',
+                    'take [item] - Pick up an item',
+                    'use [item] - Use an item from inventory',
+                    '',
+                    'INTERACTION:',
+                    'talk [npc] - Speak with NPCs',
+                    'attack [npc] - Combat (be careful!)',
+                    'trade [npc] - Trade with NPCs',
+                    '',
+                    'INFORMATION:',
+                    'inventory - Show your items',
+                    'status - Show player stats',
+                    'quests - Show active quests',
+                    'skills - Show your skills',
+                    '',
+                    'GAME:',
+                    'save/load - Save or load game',
+                    'restart - Start a new game',
+                    'quit - Exit the game',
+                    '',
+                    'COMBAT COMMANDS:',
+                    'attack - Attack the enemy',
+                    'flee - Try to escape combat',
+                    'status - Show combat status',
+                    '',
+                    'CONTROLS:',
+                    'TAB - Toggle inventory',
+                    'Shift+TAB - Toggle help',
+                    'Arrow keys - Navigate command history'
+                ];
+                
+                helpContent.forEach(line => {
+                    if (line === '') {
+                        this.helpList.appendChild(document.createElement('br'));
+                    } else {
+                        const div = document.createElement('div');
+                        div.textContent = line;
+                        div.style.marginBottom = '3px';
+                        if (line.includes(':')) {
+                            div.style.color = '#ffff00';
+                            div.style.fontWeight = 'bold';
+                        }
+                        this.helpList.appendChild(div);
+                    }
+                });
+                
+                this.helpPanel.style.display = 'block';
+            }
+            
+            // Helper methods
+            hasItem(itemId) {
+                return this.player.inventory.includes(itemId);
+            }
+            
+            removeItem(itemId) {
+                this.player.inventory = this.player.inventory.filter(item => item !== itemId);
+            }
+            
+            gainXp(amount) {
+                this.player.xp += amount;
+                this.addOutput(`+${amount} XP`, 'success');
+                
+                // Level up check
+                const newLevel = Math.floor(this.player.xp / 100) + 1;
+                if (newLevel > this.player.level) {
+                    this.levelUp(newLevel);
+                }
+                
+                this.updateStats();
+            }
+            
+            levelUp(newLevel) {
+                this.player.level = newLevel;
+                this.player.maxHp += 20;
+                this.player.hp = this.player.maxHp;
+                this.addOutput(`LEVEL UP! You are now level ${newLevel}!`, 'critical');
+                this.addOutput('Max HP increased by 20!', 'success');
+            }
+            
+            heal(amount) {
+                this.player.hp = Math.min(this.player.hp + amount, this.player.maxHp);
+                this.addOutput(`Restored ${amount} HP.`, 'success');
+                this.updateStats();
+            }
+            
+            addCredits(amount) {
+                this.player.credits += amount;
+                this.addOutput(`+${amount} credits`, 'success');
+                this.updateStats();
+            }
+            
+            updateStats() {
+                document.getElementById('hp').textContent = this.player.hp;
+                document.getElementById('xp').textContent = this.player.xp;
+                document.getElementById('level').textContent = this.player.level;
+                document.getElementById('credits').textContent = this.player.credits;
+            }
+            
+            toggleInventory() {
+                const isVisible = this.inventoryPanel.style.display === 'block';
+                this.inventoryPanel.style.display = isVisible ? 'none' : 'block';
+                this.updateInventoryDisplay();
+            }
+            
+            toggleHelp() {
+                const isVisible = this.helpPanel.style.display === 'block';
+                this.helpPanel.style.display = isVisible ? 'none' : 'block';
+            }
+
+            updateInventoryDisplay() {
+                this.inventoryList.innerHTML = '';
+                this.player.inventory.forEach(itemId => {
+                    const item = this.gameData.items[itemId];
+                    const div = document.createElement('div');
+                    div.className = 'inventory-item';
+                    div.textContent = item.name;
+                    div.title = item.description;
+                    this.inventoryList.appendChild(div);
+                });
+            }
+            
+            navigateHistory(direction) {
+                if (this.commandHistory.length === 0) return;
+                
+                this.historyIndex += direction;
+                this.historyIndex = Math.max(-1, Math.min(this.commandHistory.length - 1, this.historyIndex));
+                
+                if (this.historyIndex >= 0) {
+                    this.input.value = this.commandHistory[this.historyIndex];
+                } else {
+                    this.input.value = '';
+                }
+            }
+            
+            saveGame() {
+                const saveData = {
+                    player: this.player,
+                    gameData: this.gameData
+                };
+                localStorage.setItem('terminal-rpg-save', JSON.stringify(saveData));
+                this.addOutput('Game saved successfully.', 'success');
+            }
+            
+            loadGame() {
+                const saveData = localStorage.getItem('terminal-rpg-save');
+                if (saveData) {
+                    const data = JSON.parse(saveData);
+                    this.player = data.player;
+                    this.gameData = data.gameData;
+                    this.currentRoom = this.gameData.rooms[this.player.location];
+                    this.updateStats();
+                    this.addOutput('Game loaded successfully.', 'success');
+                    this.lookAround();
+                } else {
+                    this.addOutput('No saved game found.', 'error');
+                }
+            }
+            
+            restartGame() {
+                if (confirm('Are you sure you want to restart? All progress will be lost.')) {
+                    location.reload();
+                }
+            }
+            
+            quitGame() {
+                if (confirm('Are you sure you want to quit?')) {
+                    this.addOutput('Thanks for playing VESSEL Terminal RPG!', 'success');
+                    this.input.disabled = true;
+                }
+            }
+            
+            // Special game events
+            triggerRandomEncounter() {
+                const encounters = [
+                    'A security drone scans the area but doesn\'t detect you.',
+                    'You hear footsteps approaching but they fade away.',
+                    'A maintenance AI briefly acknowledges your presence.',
+                    'Warning lights flash briefly then return to normal.'
+                ];
+                
+                const encounter = encounters[Math.floor(Math.random() * encounters.length)];
+                this.addOutput(encounter, 'warning');
+            }
+            
+            showSkills() {
+                this.addOutput('SKILLS:', 'warning');
+                this.addOutput(`  Hacking: ${this.player.skills.hacking}`, 'system');
+                this.addOutput(`  Combat: ${this.player.skills.combat}`, 'system');
+                this.addOutput(`  Stealth: ${this.player.skills.stealth}`, 'system');
+                this.addOutput(`  Charisma: ${this.player.skills.charisma}`, 'system');
+            }
+            
+            showQuests() {
+                if (this.player.quests.length === 0) {
+                    this.addOutput('No active quests.', 'system');
+                    return;
+                }
+                
+                this.addOutput('ACTIVE QUESTS:', 'warning');
+                this.player.quests.forEach(quest => {
+                    this.addOutput(`  ${quest.title}: ${quest.description}`, 'system');
+                    if (quest.objectives) {
+                        quest.objectives.forEach(obj => {
+                            const status = obj.completed ? '✓' : '○';
+                            this.addOutput(`    ${status} ${obj.description}`, 'system');
+                        });
+                    }
+                });
+            }
+            
+            tradeWithNpc(npcId) {
+                if (!npcId) {
+                    if (this.currentRoom.npcs && this.currentRoom.npcs.length === 1) {
+                        npcId = this.currentRoom.npcs[0];
+                    } else {
+                        this.addOutput('Trade with whom?', 'error');
+                        return;
+                    }
+                } else {
+                    npcId = npcId.replace(/\s+/g, '-');
+                }
+                
+                if (!this.currentRoom.npcs.includes(npcId)) {
+                    this.addOutput(`There's no ${npcId} here.`, 'error');
+                    return;
+                }
+                
+                const npc = this.gameData.npcs[npcId];
+                
+                if (!npc.trader) {
+                    this.addOutput(`${npc.name} is not interested in trading.`, 'warning');
+                    return;
+                }
+                
+                this.addOutput(`Trading with ${npc.name}...`, 'system');
+                
+                // Check for specific trade items
+                if (this.hasItem('encrypted-drive') && npcId === 'data-broker') {
+                    this.addOutput('The broker offers 150 credits for your encrypted drive.', 'warning');
+                    this.addOutput('Type "sell drive" to accept the offer.', 'system');
+                } else if (this.hasItem('corporate-secrets') && npcId === 'data-broker') {
+                    this.addOutput('The broker offers 600 credits for your corporate secrets!', 'warning');
+                    this.addOutput('Type "sell secrets" to accept the offer.', 'system');
+                } else {
+                    this.addOutput('Nothing of interest to trade at the moment.', 'system');
+                }
+            }
+            
+            examine(target) {
+                if (!target) {
+                    this.addOutput('Examine what?', 'error');
+                    return;
+                }
+                
+                const normalizedId = target.replace(/\s+/g, '-');
+                
+                // Check if it's an item in the room
+                if (this.currentRoom.items.includes(normalizedId)) {
+                    const item = this.gameData.items[normalizedId];
+                    this.addOutput(`${item.name}: ${item.description}`, 'story');
+                    if (item.value) {
+                        this.addOutput(`Value: ${item.value} credits`, 'system');
+                    }
+                    return;
+                }
+                
+                // Check if it's an NPC
+                if (this.currentRoom.npcs.includes(normalizedId)) {
+                    const npc = this.gameData.npcs[normalizedId];
+                    this.addOutput(`${npc.name}: ${npc.dialogue[0]}`, 'prompt');
+                    return;
+                }
+                
+                // Check if it's an exit
+                if (this.currentRoom.exits[normalizedId]) {
+                    const exitRoom = this.gameData.rooms[this.currentRoom.exits[normalizedId]];
+                    this.addOutput(`Exit to ${exitRoom.name}: ${exitRoom.description.substring(0, 100)}...`, 'system');
+                    return;
+                }
+                
+                this.addOutput(`You don't see a ${target} here.`, 'error');
+            }
+            
+            // Enhanced item usage methods
+            scanArea() {
+                this.addOutput('Scanner reveals:', 'warning');
+                if (this.currentRoom.items.length > 0) {
+                    this.addOutput('Hidden items detected.', 'system');
+                }
+                if (this.currentRoom.dangerous) {
+                    this.addOutput('Security systems active.', 'critical');
+                }
+                if (this.currentRoom.restricted) {
+                    this.addOutput('Access restrictions detected.', 'warning');
+                }
+                this.addOutput('Scan complete.', 'success');
+                this.gainXp(5);
+            }
+            
+            accessNetwork() {
+                this.addOutput('Accessing global network...', 'system');
+                this.addOutput('Data streams flow through your consciousness.', 'story');
+                this.addOutput('You gain insight into the corporate conspiracy.', 'warning');
+                this.gainXp(25);
+                this.player.skills.hacking += 1;
+                this.addOutput('Hacking skill increased!', 'success');
+            }
+            
+            offerCorporateQuest() {
+                this.addOutput('The executive leans closer...', 'story');
+                this.addOutput('"I have a proposition for someone with your... skills."', 'prompt');
+                this.addOutput('Type "accept quest" to begin a dangerous mission.', 'warning');
+                this.player.flags.corporateQuest = true;
+                
+                // Add quest to player's quest log
+                this.player.quests.push({
+                    id: 'corporate-infiltration',
+                    title: 'Corporate Infiltration',
+                    description: 'Infiltrate MegaCorp and gather intelligence',
+                    objectives: [
+                        { description: 'Get access to the executive floor', completed: false },
+                        { description: 'Retrieve classified documents', completed: false },
+                        { description: 'Return to the executive', completed: false }
+                    ],
+                    reward: { xp: 200, credits: 500 }
+                });
+            }
+
+            enhanceNeuralProcessing() {
+                this.addOutput('You feel your neural processing speed increase.', 'success');
+                this.gainXp(10);
+            }
+
+            scanBrainActivity() {
+                this.addOutput('You scan the neural interface and see brain activity patterns.', 'system');
+                this.gainXp(15);
+            }
+
+            readResistanceManual() {
+                this.addOutput('You read the Resistance Manual. It provides valuable insight into the city\'s underground.', 'story');
+                this.gainXp(10);
+            }
+
+            readFreedomPamphlet() {
+                this.addOutput('You read the Freedom Pamphlet. It inspires you to fight for freedom.', 'story');
+                this.gainXp(10);
+            }
+
+            useOldComputer() {
+                this.addOutput('You use the old computer. It\'s surprisingly functional.', 'system');
+                this.gainXp(5);
+            }
+
+            findHiddenStash() {
+                this.addOutput('You find a hidden stash! It contains valuable items.', 'success');
+                this.gainXp(15);
+            }
+
+            attackNpc(target) {
+                if (!target) {
+                    if (this.currentRoom.npcs && this.currentRoom.npcs.length === 1) {
+                        target = this.currentRoom.npcs[0];
+                    } else {
+                        this.addOutput('Attack whom?', 'error');
+                        return;
+                    }
+                } else {
+                    target = target.replace(/\s+/g, '-');
+                }
+                
+                if (!this.currentRoom.npcs.includes(target)) {
+                    this.addOutput(`There's no ${target} here.`, 'error');
+                    return;
+                }
+                
+                const npc = this.gameData.npcs[target];
+                
+                if (!npc.hostile) {
+                    this.addOutput(`${npc.name} is not hostile.`, 'warning');
+                    return;
+                }
+                
+                if (this.inCombat) {
+                    this.addOutput('You are already in combat!', 'error');
+                    return;
+                }
+                
+                this.startCombat(npc);
+            }
+            
+            startCombat(enemy) {
+                this.inCombat = true;
+                this.currentEnemy = { ...enemy, currentHp: enemy.hp || 50 };
+                
+                this.addOutput(`⚔️  COMBAT STARTED!`, 'critical');
+                this.addOutput(`You are fighting ${enemy.name}!`, 'warning');
+                this.addOutput(`Enemy HP: ${this.currentEnemy.currentHp}/${enemy.hp || 50}`, 'system');
+                this.addOutput('Type "attack" to fight or "flee" to run away.', 'system');
+            }
+            
+            processCombatCommand(command) {
+                if (!this.inCombat) return false;
+                
+                switch (command) {
+                    case 'attack':
+                        this.performAttack();
+                        return true;
+                    case 'flee':
+                        this.fleeCombat();
+                        return true;
+                    case 'status':
+                        this.showCombatStatus();
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+            
+            performAttack() {
+                if (!this.inCombat || !this.currentEnemy) return;
+                
+                // Player attack
+                const playerDamage = Math.floor(Math.random() * 20) + this.player.skills.combat * 5;
+                this.currentEnemy.currentHp -= playerDamage;
+                
+                this.addOutput(`You attack for ${playerDamage} damage!`, 'success');
+                
+                if (this.currentEnemy.currentHp <= 0) {
+                    this.endCombat(true);
+                    return;
+                }
+                
+                // Enemy attack
+                const enemyDamage = Math.floor(Math.random() * 15) + 5;
+                this.player.hp -= enemyDamage;
+                
+                this.addOutput(`${this.currentEnemy.name} attacks for ${enemyDamage} damage!`, 'error');
+                this.addOutput(`Your HP: ${this.player.hp}/${this.player.maxHp}`, 'system');
+                
+                if (this.player.hp <= 0) {
+                    this.gameOver();
+                    return;
+                }
+                
+                this.updateStats();
+            }
+            
+            fleeCombat() {
+                if (!this.inCombat) return;
+                
+                const fleeChance = Math.random();
+                if (fleeChance < 0.7) {
+                    this.addOutput('You successfully flee from combat!', 'success');
+                    this.endCombat(false);
+                } else {
+                    this.addOutput('You failed to flee!', 'error');
+                    // Enemy gets a free attack
+                    const enemyDamage = Math.floor(Math.random() * 15) + 5;
+                    this.player.hp -= enemyDamage;
+                    this.addOutput(`${this.currentEnemy.name} attacks for ${enemyDamage} damage!`, 'error');
+                    this.updateStats();
+                }
+            }
+            
+            endCombat(victory) {
+                if (victory) {
+                    const xpGain = Math.floor(this.currentEnemy.hp / 2) + 10;
+                    const creditGain = Math.floor(Math.random() * 50) + 25;
+                    
+                    this.addOutput(`🎉 VICTORY! You defeated ${this.currentEnemy.name}!`, 'success');
+                    this.gainXp(xpGain);
+                    this.addCredits(creditGain);
+                    
+                    // Remove enemy from room
+                    this.currentRoom.npcs = this.currentRoom.npcs.filter(npc => npc !== this.currentEnemy.id);
+                }
+                
+                this.inCombat = false;
+                this.currentEnemy = null;
+                this.addOutput('Combat ended.', 'system');
+            }
+            
+            showCombatStatus() {
+                if (!this.inCombat) return;
+                
+                this.addOutput('COMBAT STATUS:', 'warning');
+                this.addOutput(`Your HP: ${this.player.hp}/${this.player.maxHp}`, 'system');
+                this.addOutput(`Enemy: ${this.currentEnemy.name} - HP: ${this.currentEnemy.currentHp}/${this.currentEnemy.hp}`, 'system');
+            }
+            
+            gameOver() {
+                this.addOutput('💀 GAME OVER!', 'critical');
+                this.addOutput('You have been defeated.', 'error');
+                this.addOutput('Type "restart" to start a new game or "load" to load a saved game.', 'system');
+                this.input.disabled = true;
+            }
+        }
+        
+        // Initialize game when page loads
+        window.addEventListener('load', () => {
+            new TerminalRPG();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,2151 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    
+    <!-- Primary Meta Tags -->
+    <title>VESSEL — Retro Node Network</title>
+    <meta name="description" content="A retro node-network of strange tools & artifacts. Explore a cyberpunk-inspired interface connecting various digital vessels and repositories." />
+    <meta name="keywords" content="vessel, retro, cyberpunk, node network, tools, artifacts, terminal, interface" />
+    <meta name="author" content="VESSEL" />
+    <meta name="robots" content="index, follow" />
+    
+    <!-- Viewport and Mobile -->
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#00ff66" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="VESSEL" />
+    
+    <!-- Favicons -->
+    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico?v=1"/>
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png?v=1" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png?v=1" />
+    <link rel="icon" type="image/png" sizes="96x96" href="/assets/favicon-96x96.png?v=1" />
+    
+    <!-- Manifest -->
+    <link rel="manifest" href="/assets/manifest.json?v=1" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="/" />
+    <meta property="og:title" content="VESSEL — Retro Node Network" />
+    <meta property="og:description" content="A retro node-network of strange tools & artifacts. Explore a cyberpunk-inspired interface connecting various digital vessels and repositories." />
+    <meta property="og:image" content="/assets/preview.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:site_name" content="VESSEL" />
+    <meta property="og:locale" content="en_US" />
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="/" />
+    <meta property="twitter:title" content="VESSEL — Retro Node Network" />
+    <meta property="twitter:description" content="A retro node-network of strange tools & artifacts. Explore a cyberpunk-inspired interface connecting various digital vessels and repositories." />
+    <meta property="twitter:image" content="/assets/preview.png" />
+    
+    <!-- Mobile and Touch -->
+    <meta name="apple-touch-fullscreen" content="yes" />
+    
+    <!-- Preconnect to external domains -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    
+    <!-- Structured Data for SEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "VESSEL — Retro Node Network",
+      "description": "A retro node-network of strange tools & artifacts. Explore a cyberpunk-inspired interface connecting various digital vessels and repositories.",
+      "url": "/",
+      "applicationCategory": "ProductivityApplication",
+      "operatingSystem": "Web Browser",
+      "browserRequirements": "Requires JavaScript. Requires HTML5.",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "author": {
+        "@type": "Organization",
+        "name": "VESSEL"
+      },
+      "screenshot": "/assets/preview.png",
+      "softwareVersion": "1.0.0",
+      "featureList": [
+        "Retro cyberpunk interface",
+        "Node network visualization",
+        "Terminal commands",
+        "Multi-vessel support",
+        "GitHub integration",
+        "Responsive design"
+      ]
+    }
+    </script>
+    
+    <!-- Tailwind CDN (play) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* CSS Custom Properties for Dynamic Color System */
+        :root {
+            --accent-primary: #00ff66;
+            --accent-rgb: 0, 255, 102;
+            --accent-dark: #00cc52;
+            --accent-darker: #009940;
+            --accent-light: #33ff80;
+            --accent-lighter: #66ffaa;
+            --accent-pale: #ccffdd;
+        }
+
+        /* Retro CRT / glitch look in addition to Tailwind */
+        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
+
+        @font-face {
+            font-family: 'TerminalFont';
+            src: local('SF Mono'), local('Monaco'), local('Inconsolata'), local('Roboto Mono'), local('Source Code Pro'), local('Menlo'), local('Consolas'), local('DejaVu Sans Mono'), local('monospace');
+        }
+
+        body {
+            background: #000;
+            color: var(--accent-primary);
+            font-family: 'IBM Plex Mono', 'TerminalFont', monospace;
+            font-weight: 400;
+            letter-spacing: 0.02em;
+        }
+
+        /* Enhanced CRT effects */
+        .crt {
+            background-image:
+                linear-gradient(rgba(0, 0, 0, 0.12) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
+            background-size: 100% 2px, 100% 100%;
+            position: relative;
+        }
+
+        .crt::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                repeating-linear-gradient(0deg,
+                    rgba(0, 0, 0, 0.2) 0px,
+                    rgba(0, 0, 0, 0.2) 1px,
+                    transparent 1px,
+                    transparent 2px);
+            pointer-events: none;
+            animation: crt-flicker 0.3s infinite linear alternate;
+            z-index: 1;
+        }
+
+        .crt::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                linear-gradient(90deg,
+                    rgba(255, 0, 0, 0.05) 0%,
+                    rgba(0, 255, 0, 0.03) 50%,
+                    rgba(0, 0, 255, 0.05) 100%);
+            mix-blend-mode: screen;
+            pointer-events: none;
+            animation: crt-shift 1.5s infinite linear;
+            z-index: 2;
+        }
+
+        .glow {
+            text-shadow:
+                0 0 5px rgba(var(--accent-rgb), 0.5),
+                0 0 10px rgba(var(--accent-rgb), 0.3),
+                0 0 15px rgba(var(--accent-rgb), 0.2),
+                0 0 20px rgba(var(--accent-rgb), 0.1);
+        }
+
+        /* Enhanced scanlines with movement - only for terminal */
+        .terminal-scanlines {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .terminal-scanlines::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background-image:
+                repeating-linear-gradient(0deg,
+                    rgba(0, 0, 0, 0.1) 0px,
+                    rgba(0, 0, 0, 0.1) 1px,
+                    rgba(var(--accent-rgb), 0.04) 1px,
+                    rgba(var(--accent-rgb), 0.04) 2px,
+                    transparent 2px,
+                    transparent 3px);
+            animation: scanlines-move 0.1s linear infinite;
+            mix-blend-mode: overlay;
+            z-index: 50;
+        }
+
+        .terminal-scanlines::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100%;
+            background:
+                linear-gradient(0deg,
+                    transparent 0%,
+                    rgba(var(--accent-rgb), 0.08) 48%,
+                    rgba(var(--accent-rgb), 0.15) 50%,
+                    rgba(var(--accent-rgb), 0.08) 52%,
+                    transparent 100%);
+            animation: terminal-scanline-sweep 3s linear infinite;
+            pointer-events: none;
+            z-index: 60;
+            mix-blend-mode: overlay;
+        }
+
+        /* Terminal-specific styling */
+        .terminal-font {
+            font-family: 'IBM Plex Mono', 'TerminalFont', monospace;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+        }
+
+        /* small node label style */
+        .node-label {
+            font-size: 12px;
+            line-height: 1;
+            font-family: 'IBM Plex Mono', monospace;
+            font-weight: 500;
+        }
+
+        /* tooltip */
+        .tooltip {
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid rgba(var(--accent-rgb), 0.3);
+            padding: 8px;
+            color: var(--accent-primary);
+            font-size: 12px;
+            backdrop-filter: blur(4px);
+        }
+
+        /* Enhanced terminal caret animation */
+        .caret {
+            animation: blink 1s steps(2) infinite;
+            background: var(--accent-primary);
+            width: 8px;
+            height: 1em;
+            display: inline-block;
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: 0;
+            }
+        }
+
+        /* draggable cursor */
+        .grabbing {
+            cursor: grabbing !important;
+        }
+
+        /* Enhanced glitch effects for terminal */
+        .glitch-terminal {
+            position: relative;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(1px);
+        }
+
+        .glitch-terminal::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(90deg, transparent 95%, rgba(var(--accent-rgb), 0.1) 100%),
+                repeating-linear-gradient(0deg,
+                    transparent 0px,
+                    rgba(var(--accent-rgb), 0.03) 1px,
+                    transparent 2px,
+                    transparent 4px),
+                radial-gradient(ellipse at center, transparent 60%, rgba(var(--accent-rgb), 0.02) 100%);
+            pointer-events: none;
+            animation: glitch-flicker 2s linear infinite, horizontal-glitch 3.5s linear infinite;
+            z-index: 5;
+        }
+
+        .glitch-terminal::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(90deg,
+                    rgba(255, 0, 0, 0.05) 0%,
+                    transparent 15%,
+                    transparent 85%,
+                    rgba(0, 255, 255, 0.05) 100%);
+            pointer-events: none;
+            animation: color-shift 3.2s linear infinite;
+            z-index: 6;
+        }
+
+        .glitch-text {
+            text-shadow:
+                0.1em 0 0 rgba(255, 0, 0, 0.6),
+                -0.05em -0.1em 0 rgba(0, 255, 0, 0.6),
+                0.05em 0.1em 0 rgba(0, 0, 255, 0.6),
+                0 0 10px rgba(var(--accent-rgb), 0.5);
+            animation: glitch-text 1.5s linear infinite alternate-reverse, phosphor-burn 3s ease-in-out infinite;
+            font-family: 'IBM Plex Mono', monospace;
+            font-weight: 600;
+            position: relative;
+        }
+
+        .glitch-text::before {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            color: rgba(255, 0, 0, 0.5);
+            animation: glitch-overlay 0.3s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes glitch-overlay {
+            0% {
+                transform: translate(0);
+                opacity: 0;
+            }
+
+            10% {
+                transform: translate(2px, -1px);
+                opacity: 1;
+            }
+
+            20% {
+                transform: translate(-1px, 2px);
+                opacity: 0;
+            }
+
+            30% {
+                transform: translate(0);
+                opacity: 0;
+            }
+
+            40% {
+                transform: translate(-2px, -1px);
+                opacity: 1;
+            }
+
+            50% {
+                transform: translate(1px, 1px);
+                opacity: 0;
+            }
+
+            60% {
+                transform: translate(0);
+                opacity: 0;
+            }
+
+            70% {
+                transform: translate(1px, -2px);
+                opacity: 1;
+            }
+
+            80% {
+                transform: translate(-1px, 1px);
+                opacity: 0;
+            }
+
+            90% {
+                transform: translate(0);
+                opacity: 0;
+            }
+
+            100% {
+                transform: translate(0);
+                opacity: 0;
+            }
+        }
+
+        .glitch-input {
+            background: rgba(var(--accent-rgb), 0.02);
+            border-bottom: 1px solid rgba(var(--accent-rgb), 0.2);
+            font-family: 'IBM Plex Mono', monospace;
+            font-weight: 500;
+        }
+
+        .glitch-btn {
+            transition: all 0.1s;
+            font-family: 'IBM Plex Mono', monospace;
+            font-weight: 600;
+        }
+
+        .glitch-btn:hover {
+            text-shadow: 0 0 8px rgba(var(--accent-rgb), 0.8);
+            box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.3);
+            background: rgba(var(--accent-rgb), 0.05);
+        }
+
+        /* Enhanced CRT animations - more visible */
+        @keyframes crt-flicker {
+            0% {
+                opacity: 1;
+            }
+
+            96% {
+                opacity: 1;
+            }
+
+            98% {
+                opacity: 0.92;
+            }
+
+            99% {
+                opacity: 1;
+            }
+
+            99.5% {
+                opacity: 0.94;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        @keyframes crt-shift {
+            0% {
+                transform: translateX(0px);
+            }
+
+            8% {
+                transform: translateX(2px);
+            }
+
+            16% {
+                transform: translateX(0px);
+            }
+
+            24% {
+                transform: translateX(-2px);
+            }
+
+            32% {
+                transform: translateX(0px);
+            }
+
+            40% {
+                transform: translateX(1px);
+            }
+
+            48% {
+                transform: translateX(0px);
+            }
+
+            56% {
+                transform: translateX(-1px);
+            }
+
+            64% {
+                transform: translateX(0px);
+            }
+
+            72% {
+                transform: translateX(2px);
+            }
+
+            80% {
+                transform: translateX(0px);
+            }
+
+            88% {
+                transform: translateX(-1px);
+            }
+
+            96% {
+                transform: translateX(0px);
+            }
+
+            100% {
+                transform: translateX(0px);
+            }
+        }
+
+        @keyframes scanlines-move {
+            0% {
+                transform: translateY(0px);
+            }
+
+            100% {
+                transform: translateY(6px);
+            }
+        }
+
+        @keyframes scanline-sweep {
+            0% {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+
+            5% {
+                opacity: 0.8;
+            }
+
+            15% {
+                opacity: 1;
+            }
+
+            85% {
+                opacity: 1;
+            }
+
+            95% {
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+        }
+
+        /* Terminal-specific scanline sweep - contained within terminal bounds */
+        @keyframes terminal-scanline-sweep {
+            0% {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 0.5;
+            }
+
+            20% {
+                opacity: 1;
+            }
+
+            80% {
+                opacity: 1;
+            }
+
+            90% {
+                opacity: 0.5;
+            }
+
+            100% {
+                transform: translateY(calc(100% + 20px));
+                opacity: 0;
+            }
+        }
+
+        @keyframes horizontal-glitch {
+            0% {
+                transform: translateX(0);
+            }
+
+            2% {
+                transform: translateX(3px);
+            }
+
+            4% {
+                transform: translateX(0);
+            }
+
+            6% {
+                transform: translateX(-2px);
+            }
+
+            8% {
+                transform: translateX(0);
+            }
+
+            10% {
+                transform: translateX(2px);
+            }
+
+            12% {
+                transform: translateX(0);
+            }
+
+            14% {
+                transform: translateX(-1px);
+            }
+
+            16% {
+                transform: translateX(0);
+            }
+
+            18% {
+                transform: translateX(1px);
+            }
+
+            20% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes color-shift {
+            0% {
+                filter: hue-rotate(0deg) saturate(1);
+            }
+
+            25% {
+                filter: hue-rotate(5deg) saturate(1.1);
+            }
+
+            50% {
+                filter: hue-rotate(0deg) saturate(1);
+            }
+
+            75% {
+                filter: hue-rotate(-3deg) saturate(0.9);
+            }
+
+            100% {
+                filter: hue-rotate(0deg) saturate(1);
+            }
+        }
+
+        @keyframes glitch-text {
+
+            0%,
+            94% {
+                transform: translate(0);
+            }
+
+            96% {
+                transform: translate(-1px, 0);
+            }
+
+            98% {
+                transform: translate(1px, -1px);
+            }
+
+            100% {
+                transform: translate(0);
+            }
+        }
+
+        /* New dramatic glitch effects */
+        @keyframes terminal-static {
+            0% {
+                background-position: 0% 0%;
+            }
+
+            100% {
+                background-position: 100% 100%;
+            }
+        }
+
+        @keyframes phosphor-burn {
+            0% {
+                text-shadow: 0 0 5px rgba(var(--accent-rgb), 0.5);
+            }
+
+            50% {
+                text-shadow: 0 0 15px rgba(var(--accent-rgb), 0.8), 0 0 25px rgba(var(--accent-rgb), 0.4);
+            }
+
+            100% {
+                text-shadow: 0 0 5px rgba(var(--accent-rgb), 0.5);
+            }
+        }
+
+        /* Terminal-specific CRT effects */
+        .crt-terminal {
+            position: relative;
+        }
+
+        .terminal-glitch-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            background:
+                repeating-linear-gradient(0deg,
+                    rgba(0, 0, 0, 0.1) 0px,
+                    rgba(0, 0, 0, 0.1) 1px,
+                    rgba(var(--accent-rgb), 0.15) 1px,
+                    rgba(var(--accent-rgb), 0.15) 2px,
+                    transparent 2px,
+                    transparent 3px),
+                repeating-linear-gradient(90deg,
+                    transparent 0px,
+                    rgba(255, 0, 0, 0.05) 50px,
+                    transparent 100px,
+                    rgba(0, 255, 0, 0.03) 150px,
+                    transparent 200px,
+                    rgba(0, 0, 255, 0.05) 250px,
+                    transparent 300px);
+            animation:
+                scanlines-move 0.1s linear infinite,
+                terminal-static 4s linear infinite,
+                horizontal-glitch 6s linear infinite,
+                crt-flicker 0.5s infinite alternate;
+            z-index: 70;
+            border-radius: 6px;
+        }
+
+        /* Add a subtle sweeping line effect */
+        .terminal-glitch-overlay::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background:
+                linear-gradient(90deg,
+                    transparent 0%,
+                    rgba(var(--accent-rgb), 0.2) 20%,
+                    rgba(var(--accent-rgb), 0.4) 50%,
+                    rgba(var(--accent-rgb), 0.2) 80%,
+                    transparent 100%);
+            animation: dramatic-sweep 2s linear infinite;
+            z-index: 100;
+            box-shadow:
+                0 0 8px rgba(var(--accent-rgb), 0.3),
+                0 0 15px rgba(var(--accent-rgb), 0.1);
+        }
+
+        @keyframes dramatic-sweep {
+            0% {
+                transform: translateY(-10px);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 1;
+            }
+
+            90% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(calc(25dvh - 10px));
+                opacity: 0;
+            }
+        }
+
+        .crt-terminal::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                linear-gradient(45deg,
+                    rgba(255, 0, 0, 0.02) 0%,
+                    transparent 25%,
+                    rgba(0, 255, 0, 0.01) 50%,
+                    transparent 75%,
+                    rgba(0, 0, 255, 0.02) 100%);
+            animation: color-shift 5s linear infinite;
+            pointer-events: none;
+            z-index: 8;
+            border-radius: 6px;
+        }
+
+        .crt-terminal::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(ellipse at center,
+                    transparent 30%,
+                    rgba(0, 0, 0, 0.1) 70%,
+                    rgba(0, 0, 0, 0.3) 100%);
+            animation: crt-flicker 0.5s infinite alternate;
+            pointer-events: none;
+            z-index: 9;
+            border-radius: 6px;
+        }
+
+        /* Custom Terminal Scrollbar Styling */
+        #terminalOutput {
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent-dark) rgba(0, 0, 0, 0.3);
+        }
+
+        #terminalOutput::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        #terminalOutput::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 2px;
+        }
+
+        #terminalOutput::-webkit-scrollbar-thumb {
+            background: var(--accent-dark);
+            border-radius: 2px;
+            transition: background 0.2s;
+        }
+
+        #terminalOutput::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-primary);
+        }
+
+        #terminalOutput::-webkit-scrollbar-corner {
+            background: rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+
+<body class="relative overflow-hidden max-h-[100dvh] h-[100dvh] w-full">
+
+
+    <main class="flex flex-col h-full w-full">
+        <!-- Header -->
+        <header class="w-full text-center py-6 select-none relative">
+            <h1 class="text-5xl md:text-7xl glow tracking-widest">/VESSEL</h1>
+            <p class="text-sm opacity-60 mt-1">A retro node-network of strange tools & artifacts</p>
+
+            <!-- GitHub Icon/Button -->
+            <!-- <a href="https://github.com/sidmaz666" target="_blank" rel="noopener noreferrer" 
+       class="absolute top-0 right-0 p-3 text-xl hover:text-white transition-colors duration-200 opacity-80 hover:opacity-100 flex items-center gap-1"
+       title="View on GitHub">
+       <span class="text-[10px]">developed by @sidmaz666</span>
+    </a> -->
+        </header>
+        <!-- Canvas container (responsive) -->
+        <div class="relative w-full px-2 sm:px-4 md:px-8 lg:px-12 h-full">
+            <div id="viewport" class="absolute inset-0 bg-black/80 border border-green-900 overflow-hidden"
+                style="border-color: var(--accent-darker);">
+                <!-- svg layer for connectors -->
+                <svg id="connectors" class="absolute inset-0 w-full h-full" preserveAspectRatio="none"></svg>
+                <!-- node layer -->
+                <div id="nodes" class="absolute inset-0"></div>
+                <!-- left small status log -->
+                <div id="statusLog" class="absolute left-2 sm:left-4 top-2 sm:top-4 text-xs opacity-70 max-w-xs">
+                    initializing vessel...</div>
+            </div>
+        </div>
+
+        <!-- Terminal section (below canvas, full width) -->
+        <footer class="w-full px-0 h-[25dvh]">
+            <div class="bg-black/95 border border-green-900 p-3 border-t-0 border-b-0 glitch-terminal terminal-scanlines crt-terminal"
+                style="border-color: var(--accent-darker);">
+                <!-- Animated overlay for terminal -->
+                <div class="terminal-glitch-overlay w-full border-b border-[var(--accent-primary)] rounded-none"></div>
+                <div id="terminalOutput"
+                    class="h-24 sm:h-28 md:h-32 overflow-y-auto text-xs sm:text-sm leading-5 mb-2 terminal-font"
+                    style="color: rgba(var(--accent-rgb), 0.8);"></div>
+                <div class="flex items-center gap-2">
+                    <span id="terminalPrompt" class="glitch-text terminal-font text-sm sm:text-base"
+                        style="color: var(--accent-light);"></span>
+                    <input id="terminalInput"
+                        class="flex-1 bg-transparent outline-none text-sm sm:text-base glitch-input terminal-font"
+                        style="color: var(--accent-lighter); caret-color: var(--accent-lighter);"
+                        placeholder="type 'help'" autocomplete="off" />
+                    <button id="runBtn"
+                        class="px-2 sm:px-3 uppercase border text-xs sm:text-sm glitch-btn terminal-font"
+                        style="border-color: var(--accent-dark);">run</button>
+                </div>
+            </div>
+        </footer>
+    </main>
+
+
+
+    <script>
+        /* ======== DYNAMIC PAGES LOADING ========
+           Load pages dynamically from the /pages endpoint
+        */
+        let vessels = []; // Array of vessel objects: {url, pages, name}
+        let pages = []; // Will be populated by loadPages() - combined from all vessels
+
+        // Extract username from domain or subdomain
+        function extractUsername() {
+            const hostname = window.location.hostname;
+
+            // If it's a subdomain (contains dots), extract the first part
+            if (hostname.includes('.')) {
+                const parts = hostname.split('.');
+                return parts[0]; // Return the subdomain part
+            }
+
+            // If it's a domain name without extension, extract the main part
+            // Remove common extensions and return the base name
+            const cleanDomain = hostname
+                .replace(/\.com$|\.net$|\.org$|\.io$|\.dev$|\.app$/i, '') // Remove common extensions
+                .replace(/[^a-zA-Z0-9]/g, ''); // Remove any special characters
+
+            return cleanDomain || 'vessel'; // Fallback to 'vessel' if extraction fails
+        }
+
+        const currentUser = extractUsername();
+
+        // Update terminal prompt with dynamic username
+        function updateTerminalPrompt() {
+            const promptSpan = document.getElementById('terminalPrompt');
+            const promptText = `${currentUser} >`;
+            promptSpan.textContent = promptText;
+            promptSpan.setAttribute('data-text', promptText);
+        }
+
+        // Load saved vessels from localStorage
+        function loadSavedVessels() {
+            try {
+                const saved = localStorage.getItem('vessel-urls');
+                if (saved) {
+                    const savedVessels = JSON.parse(saved);
+                    vessels = savedVessels.map(v => ({
+                        url: v.url,
+                        name: v.name || new URL(v.url).hostname,
+                        pages: []
+                    }));
+                    termEcho(`loaded ${vessels.length} saved vessels`);
+                    return vessels;
+                }
+            } catch (error) {
+                console.warn('Failed to load saved vessels:', error);
+            }
+            return [];
+        }
+
+        // Git username management
+        let gitUsers = []; // Array of git user objects: {username, repos, lastFetched}
+
+        // Load saved git usernames from localStorage
+        function loadSavedGitUsers() {
+            try {
+                const saved = localStorage.getItem('vessel-git-users');
+                if (saved) {
+                    gitUsers = JSON.parse(saved);
+                    termEcho(`loaded ${gitUsers.length} saved git users`);
+                    return gitUsers;
+                }
+            } catch (error) {
+                console.warn('Failed to load saved git users:', error);
+            }
+            return [];
+        }
+
+        // Save git usernames to localStorage
+        function saveGitUsers() {
+            try {
+                localStorage.setItem('vessel-git-users', JSON.stringify(gitUsers));
+            } catch (error) {
+                console.error('Failed to save git users:', error);
+            }
+        }
+
+        // Fetch GitHub repositories for a username
+        async function fetchGitHubRepos(username) {
+            try {
+                termEcho(`fetching repositories for ${username}...`);
+                const response = await fetch(`https://api.github.com/users/${username}/repos`);
+
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        throw new Error(`User "${username}" not found`);
+                    } else if (response.status === 403) {
+                        throw new Error('GitHub API rate limit exceeded');
+                    } else {
+                        throw new Error(`GitHub API error: ${response.status}`);
+                    }
+                }
+
+                const repos = await response.json();
+
+                // Convert GitHub repos to page format
+                const repoPages = repos.map(repo => ({
+                    id: `${username}-${repo.name}`,
+                    name: repo.name,
+                    desc: repo.description || 'No description available',
+                    url: repo.html_url,
+                    vesselName: `git-${username}`,
+                    vesselUrl: `https://github.com/${username}`,
+                    gitRepo: true,
+                    language: repo.language,
+                    stars: repo.stargazers_count,
+                    forks: repo.forks_count
+                }));
+
+                // Update or add user to gitUsers array
+                const existingUserIndex = gitUsers.findIndex(u => u.username === username);
+                const userData = {
+                    username: username,
+                    repos: repoPages,
+                    lastFetched: new Date().toISOString()
+                };
+
+                if (existingUserIndex >= 0) {
+                    gitUsers[existingUserIndex] = userData;
+                } else {
+                    gitUsers.push(userData);
+                }
+
+                saveGitUsers();
+                termEcho(`loaded ${repoPages.length} repositories for ${username}`);
+                return repoPages;
+            } catch (error) {
+                console.error(`Failed to fetch repos for ${username}:`, error);
+                termEcho(`error: ${error.message}`);
+                return [];
+            }
+        }
+
+        // Save vessels to localStorage
+        function saveVessels() {
+            try {
+                const toSave = vessels.map(v => ({
+                    url: v.url,
+                    name: v.name
+                }));
+                localStorage.setItem('vessel-urls', JSON.stringify(toSave));
+            } catch (error) {
+                console.error('Failed to save vessels:', error);
+            }
+        }
+
+        // Add a new vessel
+        function addVessel(url, name) {
+            try {
+                const vesselUrl = new URL(url);
+                const vesselName = name || vesselUrl.hostname;
+
+                // Check if vessel already exists
+                const existing = vessels.find(v => v.url === url);
+                if (existing) {
+                    termEcho(`vessel "${vesselName}" already exists`);
+                    return false;
+                }
+
+                vessels.push({
+                    url: url,
+                    name: vesselName,
+                    pages: []
+                });
+
+                saveVessels();
+                termEcho(`added vessel "${vesselName}" at ${url}`);
+                return true;
+            } catch (error) {
+                termEcho(`invalid URL: ${url}`);
+                return false;
+            }
+        }
+
+        // Load pages from a specific vessel
+        async function loadVesselPages(vessel) {
+            try {
+                const pagesUrl = vessel.url.endsWith('/') ? vessel.url + 'pages' : vessel.url + '/pages';
+                const response = await fetch(pagesUrl);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const vesselPages = await response.json();
+                vessel.pages = vesselPages.map(page => ({
+                    ...page,
+                    vesselName: vessel.name,
+                    vesselUrl: vessel.url
+                }));
+                console.log(`Loaded ${vessel.pages.length} pages from vessel "${vessel.name}"`);
+                return vessel.pages;
+            } catch (error) {
+                console.error(`Failed to load pages from vessel "${vessel.name}":`, error);
+                termEcho(`error: failed to load pages from vessel "${vessel.name}"`);
+                vessel.pages = [];
+                return [];
+            }
+        }
+
+        // Load pages from the current server (default vessel)
+        async function loadLocalPages() {
+            try {
+                const response = await fetch('/pages');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const localPages = await response.json();
+                console.log(`Loaded ${localPages.length} pages from local server`);
+                return localPages.map(page => ({
+                    ...page,
+                    vesselName: 'local',
+                    vesselUrl: window.location.origin
+                }));
+            } catch (error) {
+                console.error('Failed to load local pages:', error);
+                termEcho('error: failed to load pages from local server');
+                return [];
+            }
+        }
+
+        // Load pages from all vessels
+        async function loadPages() {
+            // Load local pages
+            const localPages = await loadLocalPages();
+
+            // Load saved vessels
+            loadSavedVessels();
+
+            // Load saved git users
+            loadSavedGitUsers();
+
+            // Load pages from all vessels
+            const vesselPromises = vessels.map(vessel => loadVesselPages(vessel));
+            await Promise.all(vesselPromises);
+
+            // Combine all pages
+            pages = [...localPages];
+            vessels.forEach(vessel => {
+                pages.push(...vessel.pages);
+            });
+
+            // Add git repositories to pages
+            gitUsers.forEach(user => {
+                pages.push(...user.repos);
+            });
+
+            console.log(`Total loaded ${pages.length} pages from ${vessels.length + 1} vessels and ${gitUsers.length} git users`);
+            return pages;
+        }
+
+        /* ======== Color System & LocalStorage ======== */
+
+        // Load saved color on page load
+        function loadSavedColor() {
+            const savedColor = localStorage.getItem('vessel-accent-color');
+            if (savedColor) {
+                try {
+                    const colorData = JSON.parse(savedColor);
+                    setAccentColor(colorData.primary, false); // Don't save again
+                    return colorData.primary;
+                } catch (e) {
+                    console.warn('Failed to load saved color:', e);
+                }
+            }
+            return null;
+        }
+
+        // Convert hex to RGB values (supports both 3 and 6 character hex)
+        function hexToRgb(hex) {
+            // Handle 3-character hex codes
+            const shortResult = /^#?([a-f\d])([a-f\d])([a-f\d])$/i.exec(hex);
+            if (shortResult) {
+                return {
+                    r: parseInt(shortResult[1] + shortResult[1], 16),
+                    g: parseInt(shortResult[2] + shortResult[2], 16),
+                    b: parseInt(shortResult[3] + shortResult[3], 16)
+                };
+            }
+
+            // Handle 6-character hex codes
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : null;
+        }
+
+        // Generate color variations maintaining hierarchy
+        function generateColorVariations(primaryHex) {
+            const rgb = hexToRgb(primaryHex);
+            if (!rgb) return null;
+
+            // Calculate variations maintaining the original hierarchy
+            const variations = {
+                primary: primaryHex,
+                rgb: `${rgb.r}, ${rgb.g}, ${rgb.b}`,
+                dark: `#${Math.max(0, rgb.r - 25).toString(16).padStart(2, '0')}${Math.max(0, rgb.g - 25).toString(16).padStart(2, '0')}${Math.max(0, rgb.b - 25).toString(16).padStart(2, '0')}`,
+                darker: `#${Math.max(0, rgb.r - 50).toString(16).padStart(2, '0')}${Math.max(0, rgb.g - 50).toString(16).padStart(2, '0')}${Math.max(0, rgb.b - 50).toString(16).padStart(2, '0')}`,
+                light: `#${Math.min(255, rgb.r + 51).toString(16).padStart(2, '0')}${Math.min(255, rgb.g + 51).toString(16).padStart(2, '0')}${Math.min(255, rgb.b + 51).toString(16).padStart(2, '0')}`,
+                lighter: `#${Math.min(255, rgb.r + 102).toString(16).padStart(2, '0')}${Math.min(255, rgb.g + 102).toString(16).padStart(2, '0')}${Math.min(255, rgb.b + 102).toString(16).padStart(2, '0')}`,
+                pale: `#${Math.min(255, rgb.r + 204).toString(16).padStart(2, '0')}${Math.min(255, rgb.g + 204).toString(16).padStart(2, '0')}${Math.min(255, rgb.b + 204).toString(16).padStart(2, '0')}`
+            };
+
+            return variations;
+        }
+
+        // Set accent color and update CSS variables
+        function setAccentColor(colorHex, saveToStorage = true) {
+            const variations = generateColorVariations(colorHex);
+            if (!variations) {
+                termEcho('Invalid color format. Use hex format like #ff0066 or #f06');
+                return false;
+            }
+
+            // Update CSS custom properties
+            const root = document.documentElement;
+            root.style.setProperty('--accent-primary', variations.primary);
+            root.style.setProperty('--accent-rgb', variations.rgb);
+            root.style.setProperty('--accent-dark', variations.dark);
+            root.style.setProperty('--accent-darker', variations.darker);
+            root.style.setProperty('--accent-light', variations.light);
+            root.style.setProperty('--accent-lighter', variations.lighter);
+            root.style.setProperty('--accent-pale', variations.pale);
+
+            // Save to localStorage if requested
+            if (saveToStorage) {
+                localStorage.setItem('vessel-accent-color', JSON.stringify(variations));
+            }
+
+            // Re-render connectors to update colors
+            renderConnectors();
+
+            return true;
+        }
+
+        /* ======== Node UI engine (vanilla JS) ======== */
+        const viewport = document.getElementById('viewport');
+        const nodesContainer = document.getElementById('nodes');
+        const svg = document.getElementById('connectors');
+        const terminalOutput = document.getElementById('terminalOutput');
+        const terminalInput = document.getElementById('terminalInput');
+        const statusLog = document.getElementById('statusLog');
+        // we'll use left-click for panning when not on nodes
+
+        /* viewport size & scale (for pan/zoom) */
+        let state = { w: viewport.clientWidth, h: viewport.clientHeight, zoom: 1, panX: 0, panY: 0 };
+
+        window.addEventListener('resize', () => {
+            state.w = viewport.clientWidth; state.h = viewport.clientHeight; renderConnectors();
+        });
+
+        // helper - create DOM node element
+        function createNodeEl(page, x, y) {
+            const el = document.createElement('div');
+            const isDisabled = page.exist === false;
+
+            // Add disabled class and styling if exist is false
+            el.className = `node absolute flex items-center gap-1 sm:gap-2 select-none ${isDisabled ? 'cursor-not-allowed opacity-40' : 'cursor-grab'}`;
+            el.style.left = x + 'px';
+            el.style.top = y + 'px';
+            el.style.width = 'auto';
+            el.style.transform = 'translate(-50%,-50%)';
+
+            // circle + label (responsive)
+            const dot = document.createElement('div');
+            dot.className = 'w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 rounded-full border flex items-center justify-center';
+
+            // Apply disabled styling for nodes that don't exist
+            if (isDisabled) {
+                dot.style.borderColor = 'rgba(var(--accent-rgb), 0.3)';
+                dot.style.background = 'rgba(0,0,0,0.2)';
+                dot.style.filter = 'grayscale(0.7)';
+            } else {
+                dot.style.borderColor = 'var(--accent-primary)';
+                dot.style.background = 'rgba(0,0,0,0.4)';
+            }
+
+            // Different icon for different node types
+            if (page.id === 'home') {
+                // Main HOME node - special highlighting
+                dot.innerHTML = '<span class="text-sm font-bold">⬢</span>'; // Special HOME icon
+                if (!isDisabled) {
+                    dot.style.borderColor = 'var(--accent-primary)';
+                    dot.style.background = 'rgba(var(--accent-rgb), 0.25)';
+                    dot.style.boxShadow = '0 0 10px rgba(var(--accent-rgb), 0.4)';
+                }
+                dot.className += ' w-6 h-6 sm:w-8 sm:h-8 md:w-9 md:h-9'; // Larger size
+            } else if (page.gitRepo) {
+                dot.innerHTML = '<span class="text-xs">⚡</span>'; // Git repo icon
+                if (!isDisabled) {
+                    dot.style.borderColor = 'rgba(var(--accent-rgb), 0.8)';
+                    dot.style.background = 'rgba(var(--accent-rgb), 0.1)';
+                }
+            } else if (page.gitUser) {
+                dot.innerHTML = '<span class="text-xs">🐙</span>'; // Git user home icon
+                if (!isDisabled) {
+                    dot.style.borderColor = 'rgba(var(--accent-rgb), 0.9)';
+                    dot.style.background = 'rgba(var(--accent-rgb), 0.15)';
+                }
+            } else if (page.id && page.id.startsWith('home-')) {
+                // Other vessel home nodes
+                dot.innerHTML = '<span class="text-xs">⬟</span>'; // Vessel home icon
+                if (!isDisabled) {
+                    dot.style.borderColor = 'rgba(var(--accent-rgb), 0.7)';
+                    dot.style.background = 'rgba(var(--accent-rgb), 0.12)';
+                }
+            } else {
+                // Show different icon for disabled pages
+                dot.innerHTML = isDisabled ? '<span class="text-xs">×</span>' : '<span class="text-xs">›</span>';
+            }
+
+            const label = document.createElement('div');
+            label.className = 'node-label text-[10px] sm:text-xs md:text-sm ml-1 sm:ml-2';
+            label.style.color = isDisabled ? 'rgba(var(--accent-rgb), 0.4)' : 'var(--accent-lighter)';
+            label.innerText = page.name;
+
+            el.appendChild(dot);
+            el.appendChild(label);
+            // tooltip
+            const tip = document.createElement('div');
+            tip.className = 'tooltip absolute z-[9999999] bg-black border border-green-900 rounded-md hidden min-w-[200px]';
+            tip.style.left = '100%'; tip.style.top = '0';
+            let vesselInfo = '';
+            let gitInfo = '';
+            let statusInfo = '';
+
+            // Add status info for disabled nodes
+            if (isDisabled) {
+                statusInfo = `<div class='text-[10px] mt-1 px-2 py-1 rounded' style='background: rgba(255,0,0,0.2); color: rgba(255,100,100,0.9); border: 1px solid rgba(255,0,0,0.3);'>⚠ Page does not exist</div>`;
+            }
+
+            if (page.gitRepo) {
+                const username = page.vesselName.replace('git-', '');
+                vesselInfo = `<div class='text-[10px] mt-1' style='color: rgba(var(--accent-rgb), 0.4);'>git user: ${username}</div>`;
+
+                const langInfo = page.language ? `<span style='color: rgba(var(--accent-rgb), 0.6);'>${page.language}</span>` : '';
+                const starInfo = page.stars > 0 ? `<span style='color: rgba(var(--accent-rgb), 0.7);'>⭐ ${page.stars}</span>` : '';
+                const forkInfo = page.forks > 0 ? `<span style='color: rgba(var(--accent-rgb), 0.7);'>🍴 ${page.forks}</span>` : '';
+
+                if (langInfo || starInfo || forkInfo) {
+                    gitInfo = `<div class='text-[10px] mt-1 flex gap-2'>${[langInfo, starInfo, forkInfo].filter(Boolean).join(' • ')}</div>`;
+                }
+            } else if (page.gitUser) {
+                vesselInfo = `<div class='text-[10px] mt-1' style='color: rgba(var(--accent-rgb), 0.4);'>git user: ${page.gitUser}</div>`;
+            } else if (page.vesselName) {
+                vesselInfo = `<div class='text-[10px] mt-1' style='color: rgba(var(--accent-rgb), 0.4);'>vessel: ${page.vesselName}</div>`;
+            }
+
+            // Show different action button based on availability
+            const actionButton = isDisabled
+                ? `<div class='text-[10px] mt-2 pt-1 border-t' style='border-color: rgba(var(--accent-rgb), 0.3); color: rgba(var(--accent-rgb), 0.4);'>× page unavailable</div>`
+                : `<div class='text-[10px] mt-2 pt-1 border-t cursor-pointer hover:opacity-80' style='border-color: rgba(var(--accent-rgb), 0.5); color: var(--accent-light);' onclick='openPage(${JSON.stringify(page)})'>→ open</div>`;
+
+            tip.innerHTML = `<strong>${page.name}</strong><div class='text-xs mt-1' style='color: rgba(var(--accent-rgb), 0.9);'>${page.desc}</div><div class='text-[10px] mt-1' style='color: rgba(var(--accent-rgb), 0.5);'>${page.url}</div>${vesselInfo}${gitInfo}${statusInfo}${actionButton}`;
+            el.appendChild(tip);
+
+            // click to navigate (simulate) - only for enabled nodes
+            el.addEventListener('dblclick', (e) => {
+                e.stopPropagation();
+                if (!isDisabled) {
+                    openPage(page);
+                } else {
+                    termEcho(`page "${page.name}" does not exist and cannot be opened`);
+                }
+            });
+            // hover tooltip with delay
+            let tooltipTimeout;
+            el.addEventListener('mouseenter', () => {
+                clearTimeout(tooltipTimeout);
+                tip.classList.remove('hidden');
+            });
+            el.addEventListener('mouseleave', () => {
+                tooltipTimeout = setTimeout(() => {
+                    tip.classList.add('hidden');
+                }, 300);
+            });
+
+            return el;
+        }
+
+        // scatter nodes responsively but keep layout similar to original (centered HOME)
+        const homeNode = { id: 'home', name: 'HOME', desc: 'Central hub', url: '/', vesselName: 'local' };
+        const nodes = [];
+
+        function scatterNodes() {
+            nodesContainer.innerHTML = '';
+            nodes.length = 0; // Clear nodes array
+
+            // Group pages by vessel and git users
+            const localPages = pages.filter(p => p.vesselName === 'local');
+            const vesselGroups = {};
+            const gitGroups = {};
+
+            // Group regular vessels
+            vessels.forEach(vessel => {
+                vesselGroups[vessel.name] = pages.filter(p => p.vesselName === vessel.name);
+            });
+
+            // Group git repositories by username
+            pages.forEach(page => {
+                if (page.gitRepo && page.vesselName.startsWith('git-')) {
+                    const username = page.vesselName.replace('git-', '');
+                    if (!gitGroups[username]) {
+                        gitGroups[username] = [];
+                    }
+                    gitGroups[username].push(page);
+                }
+            });
+
+            const totalVessels = Object.keys(vesselGroups).length + Object.keys(gitGroups).length + 1; // +1 for local
+            const canvasWidth = state.w;
+            const canvasHeight = state.h;
+
+            // Calculate viewport margins based on content - much larger for vast distances
+            const maxClusterDistance = 800; // Maximum distance for outer clusters  
+            const maxClusterRadius = 200; // Maximum radius of any cluster
+            const margin = Math.max(100, maxClusterRadius + 50); // Ensure clusters don't get cut off
+            const usableWidth = canvasWidth - (margin * 2);
+            const usableHeight = canvasHeight - (margin * 2);
+
+            // ALWAYS place HOME at absolute center
+            const centerX = canvasWidth / 2;
+            const centerY = canvasHeight / 2;
+
+            // Create dense local cluster around center HOME
+            scatterVesselNodes(localPages, centerX, centerY, 'local', homeNode, true); // true = dense mode
+
+            // Calculate other clusters ONLY if they exist
+            const otherClusters = [...Object.entries(vesselGroups), ...Object.entries(gitGroups)].filter(([name, pages]) => pages.length > 0);
+
+            if (otherClusters.length > 0) {
+                // Calculate vast distances from center for separation
+                const minDistanceFromCenter = 600; // Minimum distance from HOME cluster
+                const clusterSeparation = 500; // Minimum distance between other clusters
+                const maxClusterRadius = 200; // Maximum radius of any cluster
+                const safeDistance = minDistanceFromCenter + maxClusterRadius;
+
+                // Arrange other clusters in a circle around the center at vast distances
+                otherClusters.forEach(([clusterName, clusterPages], index) => {
+                    const totalOtherClusters = otherClusters.length;
+                    const angle = (index / totalOtherClusters) * Math.PI * 2;
+
+                    // Calculate position at safe distance with extra spacing
+                    const distance = safeDistance + (Math.floor(index / 6) * clusterSeparation); // Expand in rings if many clusters
+                    const x = centerX + Math.cos(angle) * distance;
+                    const y = centerY + Math.sin(angle) * distance;
+
+                    if (gitGroups[clusterName]) {
+                        // Git cluster
+                        const username = clusterName;
+                        const actualRepos = clusterPages;
+
+                        const gitHomeNode = {
+                            id: `home-git-${username}`,
+                            name: `GIT:${username.toUpperCase()}`,
+                            desc: `GitHub repositories for ${username}`,
+                            url: `https://github.com/${username}`,
+                            vesselName: `git-${username}`,
+                            gitRepo: false,
+                            gitUser: username
+                        };
+
+                        scatterVesselNodes(actualRepos, x, y, `git-${username}`, gitHomeNode, false); // false = normal spacing
+                    } else {
+                        // Regular vessel cluster
+                        const vesselHomeNode = {
+                            id: `home-${clusterName}`,
+                            name: clusterName.toUpperCase(),
+                            desc: `Central hub for ${clusterName}`,
+                            url: vessels.find(v => v.name === clusterName)?.url || '/',
+                            vesselName: clusterName
+                        };
+
+                        scatterVesselNodes(clusterPages, x, y, clusterName, vesselHomeNode, false); // false = normal spacing
+                    }
+                });
+            }
+        }
+
+        function scatterVesselNodes(vesselPages, centerX, centerY, vesselName, homeNode, isDenseMode = false) {
+            // Create home node for this vessel
+            const homeEl = createNodeEl(homeNode, centerX, centerY);
+            homeEl.dataset.id = homeNode.id;
+            homeEl.dataset.vessel = vesselName;
+            nodesContainer.appendChild(homeEl);
+            nodes.push({ el: homeEl, page: homeNode, x: centerX, y: centerY, vesselName });
+
+            if (vesselPages.length === 0) return;
+
+            // Calculate proper ring distribution based on number of nodes and mode
+            const total = vesselPages.length;
+
+            // Different settings for dense mode (HOME cluster) vs normal mode
+            const settings = isDenseMode ? {
+                minNodeDistance: 35,        // Tighter spacing for HOME
+                startRadius: 50,           // Closer to HOME
+                ringSpacing: 45,           // Smaller ring increments
+                verticalCompression: 0.9,  // Less vertical compression
+                radiusJitter: 15,          // Less radius randomness
+                angleJitter: 0.2           // Less angle randomness
+            } : {
+                minNodeDistance: 60,       // More spacing for other clusters
+                startRadius: 80,           // Further from cluster center
+                ringSpacing: 80,           // Larger ring increments  
+                verticalCompression: 0.8,  // More vertical compression
+                radiusJitter: 25,          // More radius randomness
+                angleJitter: 0.4           // More angle randomness
+            };
+
+            // Calculate rings dynamically based on number of nodes
+            const rings = [];
+            let currentRadius = settings.startRadius;
+            let remainingNodes = total;
+
+            while (remainingNodes > 0) {
+                // Calculate how many nodes can fit in this ring with proper spacing
+                const circumference = 2 * Math.PI * currentRadius;
+                const maxNodesInRing = Math.floor(circumference / settings.minNodeDistance);
+                const nodesInThisRing = Math.min(remainingNodes, maxNodesInRing);
+
+                rings.push({
+                    radius: currentRadius,
+                    nodeCount: nodesInThisRing
+                });
+
+                remainingNodes -= nodesInThisRing;
+                currentRadius += settings.ringSpacing;
+            }
+
+            // Place nodes in calculated rings
+            let nodeIndex = 0;
+            rings.forEach((ring, ringIndex) => {
+                const { radius, nodeCount } = ring;
+
+                for (let i = 0; i < nodeCount && nodeIndex < total; i++, nodeIndex++) {
+                    // Calculate angle with proper spacing and some randomness
+                    const baseAngle = (i / nodeCount) * Math.PI * 2;
+                    const angleJitter = (Math.random() - 0.5) * settings.angleJitter;
+                    const angle = baseAngle + angleJitter + (ringIndex * 0.1); // Offset rings slightly
+
+                    // Add radius variation for more natural look
+                    const radiusJitter = (Math.random() - 0.5) * settings.radiusJitter;
+                    const finalRadius = radius + radiusJitter;
+
+                    // Calculate position
+                    const x = centerX + Math.cos(angle) * finalRadius;
+                    const y = centerY + Math.sin(angle) * finalRadius * settings.verticalCompression;
+
+                    // Create and place node
+                    const node = vesselPages[nodeIndex];
+                    const el = createNodeEl(node, x, y);
+                    el.dataset.id = node.id;
+                    el.dataset.vessel = vesselName;
+                    nodesContainer.appendChild(el);
+                    nodes.push({ el, page: node, x, y, vesselName });
+                }
+            });
+        }
+
+        // Initialize the application after loading pages
+        async function initializeApp() {
+            termEcho('--- vessel — retro node network ---');
+            termEcho('loading pages from server...');
+
+            await loadPages();
+
+            if (pages.length === 0) {
+                termEcho('warning: no pages loaded, retrying...');
+                // Retry once
+                await loadPages();
+            }
+
+            if (pages.length > 0) {
+                termEcho(`loaded ${pages.length} pages successfully`);
+                scatterNodes();
+                renderConnectors();
+            } else {
+                termEcho('error: could not load any pages');
+            }
+
+            // Load saved color scheme
+            const loadedColor = loadSavedColor();
+            if (loadedColor) {
+                termEcho(`loaded saved color: ${loadedColor}`);
+            }
+
+            termEcho('type "help" for commands');
+        }
+
+        // Don't call scatterNodes() immediately, wait for pages to load
+
+        /* Drag & drop + pan */
+        let dragging = null;
+        let dragOffset = { x: 0, y: 0 };
+        nodesContainer.addEventListener('pointerdown', (e) => {
+            // only left button
+            if (e.button !== 0) return;
+            const nodeEl = e.target.closest('.node');
+            if (nodeEl) {
+                dragging = nodes.find(n => n.el === nodeEl);
+                nodeEl.classList.add('grabbing');
+                dragOffset.x = e.clientX - parseFloat(nodeEl.style.left);
+                dragOffset.y = e.clientY - parseFloat(nodeEl.style.top);
+                nodeEl.setPointerCapture(e.pointerId);
+            }
+        });
+        nodesContainer.addEventListener('pointermove', (e) => {
+            if (dragging) {
+                const nx = e.clientX - dragOffset.x;
+                const ny = e.clientY - dragOffset.y;
+                dragging.x = nx; dragging.y = ny;
+                dragging.el.style.left = nx + 'px'; dragging.el.style.top = ny + 'px';
+                renderConnectors();
+            }
+        });
+
+        /* left-click pan for whole canvas (when not on nodes) */
+        let panning = false;
+        let panPrev = { x: 0, y: 0 };
+        viewport.addEventListener('pointerdown', (e) => {
+            // only left button, and only if we didn't click on a node
+            if (e.button !== 0) return;
+            const nodeEl = e.target.closest('.node');
+            if (!nodeEl) {
+                panning = true;
+                panPrev.x = e.clientX; panPrev.y = e.clientY;
+                viewport.classList.add('grabbing');
+                try { viewport.setPointerCapture(e.pointerId); } catch { }
+            }
+        });
+        viewport.addEventListener('pointermove', (e) => {
+            if (!panning) return;
+            const dx = e.clientX - panPrev.x;
+            const dy = e.clientY - panPrev.y;
+            panPrev.x = e.clientX; panPrev.y = e.clientY;
+            // shift all nodes by delta and rerender connectors
+            nodes.forEach(n => {
+                n.x += dx; n.y += dy;
+                n.el.style.left = n.x + 'px';
+                n.el.style.top = n.y + 'px';
+            });
+            renderConnectors();
+        });
+        const endPan = (e) => {
+            if (!panning) return;
+            panning = false;
+            viewport.classList.remove('grabbing');
+            try { viewport.releasePointerCapture(e.pointerId); } catch { }
+        };
+        viewport.addEventListener('pointerup', endPan);
+        viewport.addEventListener('pointercancel', endPan);
+        nodesContainer.addEventListener('pointerup', (e) => {
+            if (dragging) {
+                dragging.el.classList.remove('grabbing');
+                dragging.el.releasePointerCapture(e.pointerId);
+                dragging = null;
+            }
+        });
+
+        /* connectors rendering: draw lines between nodes within threshold and draw a stronger line to home */
+        function renderConnectors() {
+            const w = svg.clientWidth, h = svg.clientHeight;
+            svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+            svg.innerHTML = '';
+
+            // Group nodes by vessel
+            const nodesByVessel = {};
+            nodes.forEach(node => {
+                const vesselName = node.vesselName || 'local';
+                if (!nodesByVessel[vesselName]) {
+                    nodesByVessel[vesselName] = [];
+                }
+                nodesByVessel[vesselName].push(node);
+            });
+
+            // Draw connections within each vessel
+            Object.entries(nodesByVessel).forEach(([vesselName, vesselNodes]) => {
+                const homeNode = vesselNodes.find(n =>
+                    n.page.id === 'home' ||
+                    n.page.id === `home-${vesselName}` ||
+                    n.page.id === `home-git-${vesselName.replace('git-', '')}`
+                );
+                if (!homeNode) return;
+
+                // Draw spokes from home to each node in this vessel
+                vesselNodes.forEach(n => {
+                    if (n !== homeNode) {
+                        const dist = Math.hypot(n.x - homeNode.x, n.y - homeNode.y);
+                        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                        line.setAttribute('x1', homeNode.x);
+                        line.setAttribute('y1', homeNode.y);
+                        line.setAttribute('x2', n.x);
+                        line.setAttribute('y2', n.y);
+                        line.setAttribute('stroke', `rgba(var(--accent-rgb),0.15)`);
+                        line.setAttribute('stroke-width', Math.max(1.5, 3 - dist / 300));
+                        svg.appendChild(line);
+                    }
+                });
+
+                // Draw thin network connections within vessel (nearby nodes)
+                for (let i = 0; i < vesselNodes.length; i++) {
+                    for (let j = i + 1; j < vesselNodes.length; j++) {
+                        const a = vesselNodes[i], b = vesselNodes[j];
+                        const d = Math.hypot(a.x - b.x, a.y - b.y);
+                        if (d < 150) { // Larger threshold to account for new spacing
+                            const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                            l.setAttribute('x1', a.x); l.setAttribute('y1', a.y);
+                            l.setAttribute('x2', b.x); l.setAttribute('y2', b.y);
+                            l.setAttribute('stroke', `rgba(var(--accent-rgb),0.06)`); // More subtle
+                            l.setAttribute('stroke-width', '1');
+                            svg.appendChild(l);
+                        }
+                    }
+                }
+            });
+
+            // Draw inter-vessel connections (only between reasonably close home nodes)
+            const homeNodes = nodes.filter(n => n.page.id === 'home' || n.page.id.startsWith('home-'));
+            const mainHome = homeNodes.find(n => n.page.id === 'home');
+
+            if (homeNodes.length > 1 && mainHome) {
+                // Connect main HOME to other cluster homes only if they're not too far
+                homeNodes.forEach(node => {
+                    if (node !== mainHome) {
+                        const distance = Math.hypot(node.x - mainHome.x, node.y - mainHome.y);
+                        // Only connect if within reasonable distance (not the vast outer clusters)
+                        if (distance < 400) {
+                            const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                            l.setAttribute('x1', mainHome.x); l.setAttribute('y1', mainHome.y);
+                            l.setAttribute('x2', node.x); l.setAttribute('y2', node.y);
+                            l.setAttribute('stroke', `rgba(var(--accent-rgb),0.15)`);
+                            l.setAttribute('stroke-width', '1.5');
+                            l.setAttribute('stroke-dasharray', '8,8');
+                            svg.appendChild(l);
+                        }
+                    }
+                });
+            }
+        }
+        renderConnectors();
+
+        /* pinch-zoom and pan (mouse wheel) */
+        viewport.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const delta = e.deltaY > 0 ? 0.9 : 1.1; // Smoother zoom increments
+            state.zoom *= delta;
+
+            // Zoom relative to mouse position for better UX
+            const rect = viewport.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            nodes.forEach(n => {
+                // Scale relative to mouse position, not fixed center
+                n.x = mouseX + (n.x - mouseX) * delta;
+                n.y = mouseY + (n.y - mouseY) * delta;
+                n.el.style.left = n.x + 'px';
+                n.el.style.top = n.y + 'px';
+            });
+            renderConnectors();
+        }, { passive: false });
+
+        /* open page (simulate real navigation) */
+        function openPage(page) {
+            // Check if page is disabled
+            if (page.exist === false) {
+                termEcho(`> ERROR: cannot open "${page.name}" - page does not exist`);
+                return;
+            }
+
+            termEcho(`> OPEN ${page.name}  -- ${page.url}`);
+            // for prototype we show modal-ish overlay with page info
+            showOverlay(page);
+        }
+
+        /* simple overlay to emulate navigating to a page (since site is static here) */
+        function showOverlay(page) {
+            const overlay = document.createElement('div');
+            overlay.className = 'fixed inset-0 flex items-center justify-center bg-black/90 z-60';
+
+            let vesselInfo = '';
+            let pageUrl = '';
+            let openButtonText = 'open page';
+
+            if (page.gitRepo) {
+                // Git repository
+                const username = page.vesselName.replace('git-', '');
+                vesselInfo = `<div class='text-xs text-green-400/70 mb-2'>GitHub Repository: ${username}/${page.name}</div>`;
+                pageUrl = page.url; // Direct GitHub URL
+                openButtonText = 'open on GitHub';
+
+                // Add repository stats if available
+                const stats = [];
+                if (page.language) stats.push(`Language: ${page.language}`);
+                if (page.stars > 0) stats.push(`⭐ ${page.stars}`);
+                if (page.forks > 0) stats.push(`🍴 ${page.forks}`);
+                if (stats.length > 0) {
+                    vesselInfo += `<div class='text-xs text-green-300/60 mb-2'>${stats.join(' • ')}</div>`;
+                }
+            } else if (page.gitUser) {
+                // Git user home
+                vesselInfo = `<div class='text-xs text-green-400/70 mb-2'>GitHub User: ${page.gitUser}</div>`;
+                pageUrl = page.url; // GitHub user profile URL
+                openButtonText = 'open GitHub profile';
+            } else if (page.vesselName && page.vesselName !== 'local') {
+                // Regular vessel
+                vesselInfo = `<div class='text-xs text-green-400/70 mb-2'>Vessel: ${page.vesselName} (${page.vesselUrl})</div>`;
+                pageUrl = `${page.vesselUrl}${page.vesselUrl.endsWith('/') ? '' : '/'}pages/${page.id}`;
+            } else {
+                // Local page
+                pageUrl = `/pages/${page.id}`;
+            }
+
+            overlay.innerHTML = `\
+      <div class='max-w-2xl w-[90%] border border-green-900 p-6 rounded'>\
+        <h2 class='text-xl font-bold mb-2'>${page.name}</h2>\
+        ${vesselInfo}\
+        <p class='text-sm text-green-200/80 mb-4'>${page.desc}</p>\
+        <div class='text-xs text-green-300/70 mb-4'>This is a preview. Double-click other nodes or type commands to navigate.</div>\
+        <div class='flex justify-end gap-2'>\
+          <button class='overlayCloseBtn px-3 py-1 border rounded border-green-800 hover:bg-green-800/20'>close</button>\
+          <a href='${pageUrl}' target='_blank' class='px-3 py-1 border rounded border-green-800 hover:bg-green-800/20'>${openButtonText}</a>\
+        </div>\
+      </div>`;
+            document.body.appendChild(overlay);
+            overlay.querySelector('.overlayCloseBtn').addEventListener('click', () => overlay.remove());
+            overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+        }
+
+        /* terminal */
+        function termEcho(text) {
+            const line = document.createElement('div');
+            line.innerHTML = text;
+            terminalOutput.appendChild(line);
+            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+        }
+
+        terminalInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { runCommand(terminalInput.value.trim()); terminalInput.value = ''; } });
+        document.getElementById('runBtn').addEventListener('click', () => { runCommand(terminalInput.value.trim()); terminalInput.value = ''; });
+
+        function runCommand(raw) {
+            if (!raw) return;
+            const cmd = raw.toLowerCase();
+            termEcho(`<span style='color: var(--accent-light);'>${currentUser} &gt;</span> ${raw}`);
+            // built-in commands
+            if (cmd === 'help') {
+                termEcho('commands: help | list | open <id|name> | find <term> | goto <slug> | map | center | reset | random | clear | color <hex>');
+                termEcho('vessel commands: add vessel <url> | vessels | remove vessel <name> | reload');
+                termEcho('git commands: git add <username> | git list | git remove <username> | git refresh <username>');
+                termEcho('view commands: center/reset (or Ctrl+R/Escape) - reset view to center');
+                termEcho('color examples: color #ff0066, color #f06, color cyan, color reset');
+                termEcho('named colors: red, blue, cyan, magenta, yellow, orange, purple, pink, lime, teal, indigo, violet, green');
+                return;
+            }
+            if (cmd === 'list' || cmd === 'ls') {
+                if (pages.length === 0) {
+                    termEcho('no pages loaded');
+                    return;
+                }
+                // Group by vessel
+                const byVessel = {};
+                const gitRepos = {};
+
+                pages.forEach(p => {
+                    if (p.gitRepo) {
+                        const username = p.vesselName.replace('git-', '');
+                        if (!gitRepos[username]) gitRepos[username] = [];
+                        gitRepos[username].push(p);
+                    } else {
+                        const vessel = p.vesselName || 'local';
+                        if (!byVessel[vessel]) byVessel[vessel] = [];
+                        byVessel[vessel].push(p);
+                    }
+                });
+
+                // Show vessels first
+                Object.entries(byVessel).forEach(([vesselName, vesselPages]) => {
+                    termEcho(`=== ${vesselName.toUpperCase()} VESSEL ===`);
+                    vesselPages.forEach(p => {
+                        const status = p.exist === false ? ' [DISABLED]' : '';
+                        const statusColor = p.exist === false ? 'rgba(255,100,100,0.9)' : 'var(--accent-lighter)';
+                        termEcho(`- <span style="color: ${statusColor}">${p.id}  — ${p.name}${status}</span>`);
+                    });
+                    termEcho('');
+                });
+
+                // Show git repositories
+                Object.entries(gitRepos).forEach(([username, repos]) => {
+                    termEcho(`=== GIT USER: ${username.toUpperCase()} ===`);
+                    repos.forEach(p => {
+                        const langInfo = p.language ? ` [${p.language}]` : '';
+                        const starInfo = p.stars > 0 ? ` ⭐${p.stars}` : '';
+                        const status = p.exist === false ? ' [DISABLED]' : '';
+                        const statusColor = p.exist === false ? 'rgba(255,100,100,0.9)' : 'var(--accent-lighter)';
+                        termEcho(`- <span style="color: ${statusColor}">${p.id}  — ${p.name}${langInfo}${starInfo}${status}</span>`);
+                    });
+                    termEcho('');
+                });
+                return;
+            }
+            if (cmd.startsWith('open ')) {
+                const q = cmd.slice(5).trim();
+                const page = pages.find(p => p.id === q || p.name.toLowerCase().includes(q));
+                if (page) {
+                    if (page.exist === false) {
+                        termEcho(`page "${page.name}" exists but file does not exist - cannot open`);
+                    } else {
+                        openPage(page);
+                    }
+                } else {
+                    termEcho('page not found');
+                }
+                return;
+            }
+            if (cmd.startsWith('find ')) {
+                const q = cmd.slice(5).trim();
+                const results = pages.filter(p => p.name.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q));
+                if (results.length) {
+                    results.forEach(r => {
+                        const status = r.exist === false ? ' [DISABLED]' : '';
+                        const statusColor = r.exist === false ? 'rgba(255,100,100,0.9)' : 'var(--accent-lighter)';
+                        termEcho(`> <span style="color: ${statusColor}">${r.id} — ${r.name}${status}</span>`);
+                    });
+                } else {
+                    termEcho('no matches');
+                }
+                return;
+            }
+            if (cmd.startsWith('color ')) {
+                const colorArg = raw.slice(6).trim();
+                if (colorArg === 'reset') {
+                    setAccentColor('#00ff66');
+                    termEcho('color reset to default green');
+                    return;
+                }
+                // Handle named colors
+                const namedColors = {
+                    'red': '#ff0066', 'blue': '#0066ff', 'cyan': '#00ffff', 'magenta': '#ff00ff',
+                    'yellow': '#ffff00', 'orange': '#ff6600', 'purple': '#6600ff', 'pink': '#ff6699',
+                    'lime': '#66ff00', 'teal': '#00ff99', 'indigo': '#3300ff', 'violet': '#9900ff',
+                    'green': '#00ff66'
+                };
+                const colorValue = namedColors[colorArg.toLowerCase()] || colorArg;
+
+                if (setAccentColor(colorValue)) {
+                    termEcho(`color changed to ${colorValue}`);
+                }
+                return;
+            }
+            // Git commands
+            if (cmd.startsWith('git add ')) {
+                const username = raw.slice(8).trim();
+                if (!username) {
+                    termEcho('usage: git add <username>');
+                    termEcho('example: git add octocat');
+                    return;
+                }
+
+                // Check if username already exists
+                const existing = gitUsers.find(u => u.username === username);
+                if (existing) {
+                    termEcho(`git user "${username}" already exists, use "git refresh ${username}" to update`);
+                    return;
+                }
+
+                // Fetch repositories and update map
+                fetchGitHubRepos(username).then((repos) => {
+                    if (repos.length > 0) {
+                        // Reload pages and re-render
+                        loadPages().then(() => {
+                            scatterNodes();
+                            renderConnectors();
+                            termEcho(`git user "${username}" added and map updated`);
+                        });
+                    }
+                });
+                return;
+            }
+            if (cmd === 'git list') {
+                if (gitUsers.length === 0) {
+                    termEcho('no git users configured');
+                    return;
+                }
+                termEcho('=== GIT USERS ===');
+                gitUsers.forEach(user => {
+                    const lastFetched = new Date(user.lastFetched).toLocaleString();
+                    termEcho(`- ${user.username}: ${user.repos.length} repos (last updated: ${lastFetched})`);
+                });
+                return;
+            }
+            if (cmd.startsWith('git remove ')) {
+                const username = raw.slice(11).trim();
+                if (!username) {
+                    termEcho('usage: git remove <username>');
+                    return;
+                }
+                const index = gitUsers.findIndex(u => u.username === username);
+                if (index === -1) {
+                    termEcho(`git user "${username}" not found`);
+                    return;
+                }
+                gitUsers.splice(index, 1);
+                saveGitUsers();
+                termEcho(`removed git user "${username}"`);
+                // Reload pages and re-render
+                loadPages().then(() => {
+                    scatterNodes();
+                    renderConnectors();
+                    termEcho('map updated');
+                });
+                return;
+            }
+            if (cmd.startsWith('git refresh ')) {
+                const username = raw.slice(12).trim();
+                if (!username) {
+                    termEcho('usage: git refresh <username>');
+                    return;
+                }
+                const existing = gitUsers.find(u => u.username === username);
+                if (!existing) {
+                    termEcho(`git user "${username}" not found, use "git add ${username}" to add it`);
+                    return;
+                }
+
+                // Re-fetch repositories
+                fetchGitHubRepos(username).then((repos) => {
+                    if (repos.length >= 0) { // Allow 0 repos case
+                        // Reload pages and re-render
+                        loadPages().then(() => {
+                            scatterNodes();
+                            renderConnectors();
+                            termEcho(`git user "${username}" refreshed and map updated`);
+                        });
+                    }
+                });
+                return;
+            }
+            if (cmd.startsWith('add vessel ')) {
+                const url = raw.slice(11).trim();
+                if (!url) {
+                    termEcho('usage: add vessel <url>');
+                    termEcho('example: add vessel https://example.com');
+                    return;
+                }
+                if (addVessel(url)) {
+                    // Reload pages and re-render
+                    loadPages().then(() => {
+                        scatterNodes();
+                        renderConnectors();
+                        termEcho('vessel added and map updated');
+                    });
+                }
+                return;
+            }
+            if (cmd === 'vessels') {
+                termEcho('local vessel: ' + window.location.origin);
+                if (vessels.length === 0) {
+                    termEcho('no external vessels configured');
+                } else {
+                    vessels.forEach(v => {
+                        const pageCount = v.pages ? v.pages.length : 0;
+                        termEcho(`- ${v.name}: ${v.url} (${pageCount} pages)`);
+                    });
+                }
+                return;
+            }
+            if (cmd.startsWith('remove vessel ')) {
+                const vesselName = raw.slice(14).trim();
+                if (!vesselName) {
+                    termEcho('usage: remove vessel <name>');
+                    return;
+                }
+                const index = vessels.findIndex(v => v.name === vesselName);
+                if (index === -1) {
+                    termEcho(`vessel "${vesselName}" not found`);
+                    return;
+                }
+                vessels.splice(index, 1);
+                saveVessels();
+                termEcho(`removed vessel "${vesselName}"`);
+                // Reload pages and re-render
+                loadPages().then(() => {
+                    scatterNodes();
+                    renderConnectors();
+                    termEcho('map updated');
+                });
+                return;
+            }
+            if (cmd === 'reload') {
+                termEcho('reloading all vessels...');
+                loadPages().then(() => {
+                    scatterNodes();
+                    renderConnectors();
+                    termEcho('reload complete');
+                });
+                return;
+            }
+            if (cmd === 'map') { renderConnectors(); termEcho('map refreshed'); return; }
+            if (cmd === 'center' || cmd === 'reset') { resetView(); return; }
+            if (cmd === 'random') {
+                const enabledPages = pages.filter(p => p.exist !== false);
+                if (enabledPages.length > 0) {
+                    const p = enabledPages[Math.floor(Math.random() * enabledPages.length)];
+                    openPage(p);
+                } else {
+                    termEcho('no enabled pages available');
+                }
+                return;
+            }
+            if (cmd === 'clear') { terminalOutput.innerHTML = ''; return; }
+
+            // handle simple nav by slug
+            const byId = pages.find(p => p.id === cmd);
+            if (byId) {
+                if (byId.exist === false) {
+                    termEcho(`page "${byId.name}" exists but file does not exist - cannot open`);
+                } else {
+                    openPage(byId);
+                }
+                return;
+            }
+
+            termEcho('unknown command — type help');
+        }
+
+        // small status rotation
+        const statusMsgs = ['search engine initialized', 'static noises detected', 'access granted', 'logging in', 'syncing archives', 'reading logs', 'fetching metadata', 'compiling data', 'analyzing signals', 'processing events', 'gathering intel', 'enhancing security', 'verifying integrity', 'assessing threats', 'dissecting artifacts', 'deconstructing data',
+            // Instructions on how to use the Node based UI
+            'type "help" to see available commands',
+            'click on a node to open it',
+            'click and drag to pan',
+            'scroll to zoom in/out',
+            'double click on the node to open it',
+            'click and drag on the node/canvas to pan',
+        ];
+        let sI = 0; setInterval(() => { statusLog.innerText = statusMsgs[sI++ % statusMsgs.length]; }, 2500);
+
+        // Initialize the application
+        updateTerminalPrompt();
+        initializeApp();
+
+        // Add reset view function
+        function resetView() {
+            state.zoom = 1;
+            scatterNodes();
+            renderConnectors();
+            termEcho('view reset to center');
+        }
+
+        // accessibility: keyboard navigation (tab through nodes) — focuses label and opens on Enter
+        let tabIndex = 0;
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Tab') { e.preventDefault(); tabIndex = (tabIndex + 1) % nodes.length; if (nodes[tabIndex]) nodes[tabIndex].el.querySelector('.node-label').focus(); }
+            if (e.key === 'Enter') {
+                const focused = document.activeElement.closest && document.activeElement.closest('.node');
+                if (focused) {
+                    const n = nodes.find(x => x.el === focused);
+                    if (n) {
+                        if (n.page.exist === false) {
+                            termEcho(`page "${n.page.name}" does not exist and cannot be opened`);
+                        } else {
+                            openPage(n.page);
+                        }
+                    }
+                }
+            }
+            if (e.key === 'Escape' || (e.key === 'r' && (e.ctrlKey || e.metaKey))) { e.preventDefault(); resetView(); } // Ctrl+R or Escape to reset view
+        });
+    </script>
+</body>
+
+</html>

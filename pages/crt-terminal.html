@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRT Terminal - Vessel</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css" />
+    <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xterm-addon-web-links@0.9.0/lib/xterm-addon-web-links.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        #crt-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(ellipse at center, #001100 0%, #000800 70%, #000000 100%);
+            filter: contrast(1.2) brightness(1.1);
+        }
+
+        #crt-screen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            height: 85%;
+            background: #000;
+            border-radius: 20px;
+            padding: 40px;
+            border: 8px solid #333;
+            box-shadow: 
+                inset 0 0 50px rgba(0, 255, 0, 0.1),
+                0 0 100px rgba(0, 0, 0, 0.8);
+            overflow: hidden;
+        }
+
+        #terminal-content {
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(transparent 50%, rgba(0, 255, 0, 0.08) 50%),
+                linear-gradient(90deg, transparent 50%, rgba(0, 255, 0, 0.05) 50%);
+            background-size: 100% 3px, 3px 100%;
+            color: #00ff00;
+            font-size: 14px;
+            line-height: 1.4;
+            position: relative;
+            padding: 20px;
+            animation: crt-flicker 0.15s infinite linear alternate;
+        }
+
+        @keyframes crt-flicker {
+            0% { opacity: 1; }
+            95% { opacity: 1; }
+            96% { opacity: 0.95; }
+            97% { opacity: 0.98; }
+            98% { opacity: 0.92; }
+            99% { opacity: 0.97; }
+            100% { opacity: 1; }
+        }
+
+        .terminal-line {
+            margin-bottom: 2px;
+            white-space: pre-wrap;
+            position: relative;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 16px;
+            background: #00ff00;
+            animation: blink 1s infinite;
+            margin-left: 2px;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        #crt-screen::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                linear-gradient(
+                    rgba(18, 16, 16, 0) 50%, 
+                    rgba(0, 0, 0, 0.4) 50%
+                ),
+                linear-gradient(
+                    90deg,
+                    rgba(255, 0, 0, 0.1),
+                    rgba(0, 255, 0, 0.08),
+                    rgba(0, 0, 255, 0.1)
+                );
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+            z-index: 2;
+            border-radius: 20px;
+        }
+
+        #crt-screen::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(ellipse at center, transparent 70%, rgba(0, 0, 0, 0.4) 100%),
+                url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch"/></filter><rect width="100" height="100" filter="url(%23noise)" opacity="0.08"/></svg>');
+            pointer-events: none;
+            z-index: 3;
+            border-radius: 20px;
+        }
+
+        .glitch {
+            animation: glitch 0.4s;
+        }
+
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            10% { transform: translate(-1px, 1px); filter: hue-rotate(90deg); }
+            20% { transform: translate(-2px, 2px); filter: hue-rotate(180deg); }
+            30% { transform: translate(-1px, -1px); filter: hue-rotate(270deg); }
+            40% { transform: translate(2px, 1px); filter: hue-rotate(0deg); }
+            50% { transform: translate(1px, -2px); filter: hue-rotate(90deg); }
+            60% { transform: translate(2px, 2px); filter: hue-rotate(180deg); }
+            70% { transform: translate(1px, -1px); filter: hue-rotate(270deg); }
+            80% { transform: translate(-2px, 1px); filter: hue-rotate(0deg); }
+            90% { transform: translate(-1px, 2px); filter: hue-rotate(90deg); }
+            100% { transform: translate(0); filter: hue-rotate(0deg); }
+        }
+
+        .ghost-text {
+            opacity: 0.4;
+            text-shadow: 2px 0 #00ff00;
+        }
+
+        /* Remove old input styling */
+        #input-line {
+            display: none;
+        }
+
+        .power-button {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #ff0000 30%, #660000 70%);
+            border: 3px solid #333;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+            transition: all 0.3s;
+        }
+
+        .power-button:hover {
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
+        }
+
+        .power-button.off {
+            background: radial-gradient(circle, #333 30%, #111 70%);
+            box-shadow: none;
+        }
+
+        .settings-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 20, 0, 0.95);
+            border: 2px solid #00ff00;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.5), inset 0 0 20px rgba(0, 255, 0, 0.1);
+            display: none;
+            z-index: 1000;
+            min-width: 300px;
+            color: #00ff00;
+            font-size: 12px;
+        }
+
+        .settings-panel.visible {
+            display: block;
+        }
+
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #00ff00;
+            padding-bottom: 10px;
+        }
+
+        .close-settings {
+            background: none;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .close-settings:hover {
+            background: #00ff00;
+            color: #000;
+        }
+
+        .setting-control {
+            margin: 15px 0;
+        }
+
+        .setting-control input[type="range"] {
+            width: 120px;
+            margin-left: 10px;
+            accent-color: #00ff00;
+        }
+
+        .setting-control label {
+            display: inline-block;
+            width: 80px;
+        }
+
+        /* xterm.js custom styling */
+        #terminal {
+            padding: 20px;
+        }
+
+        .xterm {
+            background: transparent !important;
+        }
+
+        .xterm-viewport {
+            background: transparent !important;
+        }
+
+        .xterm-screen {
+            background: transparent !important;
+        }
+
+        /* Enhanced CRT effects */
+        .crt-noise {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(0, 255, 0, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(0, 255, 0, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(0, 255, 0, 0.06) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 4;
+            border-radius: 20px;
+            opacity: var(--noise-opacity, 0.08);
+        }
+
+        .crt-scanlines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0, 255, 0, 0.03) 2px,
+                rgba(0, 255, 0, 0.03) 4px
+            );
+            pointer-events: none;
+            z-index: 1;
+            border-radius: 20px;
+        }
+
+        .crt-vignette {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(
+                ellipse at center,
+                transparent 0%,
+                transparent 60%,
+                rgba(0, 0, 0, 0.3) 80%,
+                rgba(0, 0, 0, 0.6) 100%
+            );
+            pointer-events: none;
+            z-index: 6;
+            border-radius: 20px;
+        }
+
+        /* Power animations */
+        .powered-off {
+            filter: brightness(0) !important;
+            animation: power-off 0.8s ease-out forwards;
+        }
+
+        @keyframes power-off {
+            0% { 
+                filter: brightness(1) contrast(1);
+                transform: scaleY(1);
+            }
+            50% { 
+                filter: brightness(0.3) contrast(3);
+                transform: scaleY(0.3);
+            }
+            100% { 
+                filter: brightness(0) contrast(0);
+                transform: scaleY(0);
+            }
+        }
+
+        .power-on {
+            animation: power-on 1.2s ease-out forwards;
+        }
+
+        @keyframes power-on {
+            0% { 
+                filter: brightness(0) contrast(0);
+                transform: scaleY(0);
+            }
+            50% { 
+                filter: brightness(2.5) contrast(4);
+                transform: scaleY(0.6);
+            }
+            100% { 
+                filter: brightness(1) contrast(1.2);
+                transform: scaleY(1);
+            }
+        }
+
+        /* xterm.js scrollbar styling */
+        .xterm-viewport::-webkit-scrollbar {
+            width: 5px;
+        }
+        
+        .xterm-viewport::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+        }
+        
+        .xterm-viewport::-webkit-scrollbar-thumb {
+            background: rgba(0, 255, 0, 0.6);
+            border-radius: 2px;
+        }
+        
+        .xterm-viewport::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 255, 0, 0.8);
+        }
+        
+        .xterm-viewport::-webkit-scrollbar-corner {
+            background: rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Firefox scrollbar styling */
+        .xterm-viewport {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(0, 255, 0, 0.6) rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div id="crt-container">
+        <div id="crt-screen">
+            <div class="crt-scanlines"></div>
+            <div class="crt-noise"></div>
+            <div id="terminal-content">
+                <!-- xterm.js will be mounted here -->
+            </div>
+            <div class="crt-vignette"></div>
+        </div>
+
+        <div class="power-button" id="power-btn"></div>
+
+        <div class="settings-panel" id="settings-panel">
+            <div class="settings-header">
+            <div>CRT Settings</div>
+                <button class="close-settings" id="close-settings">X</button>
+            </div>
+            <div class="setting-control">
+                <label>Flicker: </label>
+                <input type="range" id="flicker-control" min="0" max="10" value="7">
+            </div>
+            <div class="setting-control">
+                <label>Glow: </label>
+                <input type="range" id="glow-control" min="0" max="10" value="8">
+            </div>
+            <div class="setting-control">
+                <label>Distortion: </label>
+                <input type="range" id="distortion-control" min="0" max="10" value="6">
+            </div>
+            <div class="setting-control">
+                <label>Noise: </label>
+                <input type="range" id="noise-control" min="0" max="10" value="8">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class CRTTerminal {
+            constructor() {
+                this.terminalContent = document.getElementById('terminal-content');
+                this.crtScreen = document.getElementById('crt-screen');
+                this.powerBtn = document.getElementById('power-btn');
+                this.crtContainer = document.getElementById('crt-container');
+                this.settingsPanel = document.getElementById('settings-panel');
+                this.closeSettingsBtn = document.getElementById('close-settings');
+                
+                this.isOn = true;
+                this.terminal = null;
+                this.terminalElement = null;
+                this.settingsVisible = false;
+                
+                this.setupEventListeners();
+                this.setupCRTEffects();
+                this.initializeTerminal();
+            }
+            
+            async initializeTerminal() {
+                try {
+                    // Create terminal element
+                    this.terminalElement = document.createElement('div');
+                    this.terminalElement.id = 'terminal';
+                    this.terminalElement.style.width = '100%';
+                    this.terminalElement.style.height = '100%';
+                    this.terminalContent.appendChild(this.terminalElement);
+                    
+                    // Initialize xterm.js
+                    this.terminal = new Terminal({
+                        cursorBlink: true,
+                        cursorStyle: 'block',
+                        fontSize: 14,
+                        fontFamily: 'Courier New, monospace',
+                        theme: {
+                            background: '#000000',
+                            foreground: '#00ff00',
+                            cursor: '#00ff00',
+                            selection: '#00ff00',
+                            black: '#000000',
+                            red: '#ff0000',
+                            green: '#00ff00',
+                            yellow: '#ffff00',
+                            blue: '#0000ff',
+                            magenta: '#ff00ff',
+                            cyan: '#00ffff',
+                            white: '#ffffff',
+                            brightBlack: '#666666',
+                            brightRed: '#ff6666',
+                            brightGreen: '#66ff66',
+                            brightYellow: '#ffff66',
+                            brightBlue: '#6666ff',
+                            brightMagenta: '#ff66ff',
+                            brightCyan: '#66ffff',
+                            brightWhite: '#ffffff'
+                        }
+                    });
+                    
+                    // Load addons with proper error handling
+                    try {
+                        if (typeof FitAddon !== 'undefined') {
+                            this.fitAddon = new FitAddon();
+                            this.terminal.loadAddon(this.fitAddon);
+                        }
+                    } catch (e) {
+                        console.warn('FitAddon not available:', e);
+                    }
+                    
+                    try {
+                        if (typeof WebLinksAddon !== 'undefined') {
+                            this.webLinksAddon = new WebLinksAddon();
+                            this.terminal.loadAddon(this.webLinksAddon);
+                        }
+                    } catch (e) {
+                        console.warn('WebLinksAddon not available:', e);
+                    }
+                    
+                    // Open terminal
+                    this.terminal.open(this.terminalElement);
+                    
+                    // Fit terminal if addon is available
+                    if (this.fitAddon) {
+                        try {
+                            this.fitAddon.fit();
+                        } catch (e) {
+                            console.warn('FitAddon fit failed:', e);
+                        }
+                    }
+                    
+                    // Start terminal session
+                    this.startTerminalSession();
+                    
+                    // Handle terminal resize
+                    window.addEventListener('resize', () => {
+                        if (this.fitAddon) {
+                            try {
+                                this.fitAddon.fit();
+                            } catch (e) {
+                                console.warn('FitAddon resize fit failed:', e);
+                            }
+                        }
+                    });
+                    
+                } catch (error) {
+                    console.error('Failed to initialize terminal:', error);
+                    // Fallback to basic terminal display
+                    this.terminalContent.innerHTML = `
+                        <div style="color: #00ff00; padding: 20px;">
+                            <div>VESSEL TERMINAL v2.1.1984</div>
+                            <div>Copyright (C) 1984-2024 Cyber Systems Inc.</div>
+                            <div style="margin-top: 20px;">Terminal initialization failed.</div>
+                            <div>Please refresh the page or check your internet connection.</div>
+                        </div>
+                    `;
+                }
+            }
+            
+            startTerminalSession() {
+                // Simulate boot sequence
+                const bootMessages = [
+                    'VESSEL TERMINAL v2.1.1984',
+                    'Copyright (C) 1984-2024 Cyber Systems Inc.',
+                    '',
+                    'Initializing CRT display...',
+                    'Loading phosphor drivers...',
+                    'Calibrating electron beam...',
+                    'Memory test: 640K OK',
+                    'Detecting hardware...',
+                    'CRT Controller: FOUND',
+                    'Phosphor coating: OPTIMAL',
+                    'Electron gun: CALIBRATED',
+                    'System ready.',
+                    '',
+                    'Welcome to VESSEL CRT Terminal',
+                    'Experience authentic 1980s computing',
+                    'Type "help" for available commands',
+                    ''
+                ];
+                
+                let messageIndex = 0;
+                const typeMessage = () => {
+                    if (messageIndex < bootMessages.length) {
+                        this.terminal.writeln(bootMessages[messageIndex]);
+                        messageIndex++;
+                        setTimeout(typeMessage, 200);
+                    } else {
+                        this.terminal.write('guest@vessel:~$ ');
+                    }
+                };
+                
+                typeMessage();
+                
+                // Handle terminal input
+                this.terminal.onData((data) => {
+                    if (data === '\r') {
+                        // Enter key pressed
+                        this.terminal.write('\r\n');
+                        this.processCommand();
+                        this.terminal.write('guest@vessel:~$ ');
+                    } else if (data === '\u007F') {
+                        // Backspace
+                        this.terminal.write('\b \b');
+                    } else if (data === '\u001b[A') {
+                        // Up arrow - command history (placeholder)
+                        this.terminal.write('\r\x1b[Kguest@vessel:~$ ');
+                    } else if (data === '\u001b[B') {
+                        // Down arrow - command history (placeholder)
+                        this.terminal.write('\r\x1b[Kguest@vessel:~$ ');
+                    } else if (data === '\u001b[C') {
+                        // Right arrow
+                        // Allow default behavior
+                    } else if (data === '\u001b[D') {
+                        // Left arrow
+                        // Allow default behavior
+                    } else if (data === '\u0003') {
+                        // Ctrl+C
+                        this.terminal.write('^C\r\n');
+                        this.terminal.write('guest@vessel:~$ ');
+                    } else if (data === '\u0004') {
+                        // Ctrl+D
+                        this.terminal.write('logout\r\n');
+                        setTimeout(() => this.shutdown(), 500);
+                    } else if (data === '\u000c') {
+                        // Ctrl+L
+                        this.terminal.clear();
+                        this.terminal.write('guest@vessel:~$ ');
+                    } else {
+                        // Regular character
+                        this.terminal.write(data);
+                    }
+                });
+            }
+            
+            processCommand() {
+                const line = this.terminal.buffer.active.getLine(this.terminal.buffer.active.baseY + this.terminal.buffer.active.cursorY - 1);
+                if (!line) return;
+                
+                const command = line.translateToString().replace('guest@vessel:~$ ', '').trim();
+                if (!command) return;
+                
+                const parts = command.split(' ');
+                const cmd = parts[0].toLowerCase();
+                    const args = parts.slice(1);
+                    
+                switch (cmd) {
+                    case 'help':
+                        this.showHelp();
+                        break;
+                    case 'clear':
+                        this.terminal.clear();
+                        break;
+                    case 'date':
+                        this.terminal.writeln(new Date().toString());
+                        break;
+                    case 'uptime':
+                        const uptime = Math.floor(Math.random() * 86400);
+                        const hours = Math.floor(uptime / 3600);
+                        const minutes = Math.floor((uptime % 3600) / 60);
+                        this.terminal.writeln(`up ${hours}:${minutes.toString().padStart(2, '0')}`);
+                        break;
+                    case 'whoami':
+                        this.terminal.writeln('guest');
+                        break;
+                    case 'ls':
+                        this.listFiles();
+                        break;
+                    case 'cat':
+                        this.catFile(args);
+                        break;
+                    case 'echo':
+                        if (args.length > 0) {
+                            this.terminal.writeln(args.join(' '));
+                        } else {
+                            this.terminal.writeln('');
+                        }
+                        break;
+                        
+                    case 'curl':
+                        if (args.length === 0) {
+                            this.terminal.writeln('Usage: curl <URL>');
+                            this.terminal.writeln('Example: curl https://httpbin.org/get');
+                        } else {
+                            const url = args[0];
+                            this.terminal.writeln(`Fetching ${url}...`);
+                            
+                            // Simulate curl behavior with fetch
+                            fetch(url)
+                                .then(response => {
+                                    this.terminal.writeln(`HTTP ${response.status} ${response.statusText}`);
+                                    this.terminal.writeln(`Content-Type: ${response.headers.get('content-type') || 'unknown'}`);
+                                    this.terminal.writeln('');
+                                    return response.text();
+                                })
+                                .then(data => {
+                                    // Truncate long responses
+                                    if (data.length > 1000) {
+                                        this.terminal.writeln(data.substring(0, 1000));
+                                        this.terminal.writeln(`... (truncated, total length: ${data.length} characters)`);
+                                    } else {
+                                        this.terminal.writeln(data);
+                                    }
+                                })
+                                .catch(error => {
+                                    this.terminal.writeln(`Error: ${error.message}`);
+                                });
+                        }
+                        break;
+                    case 'cowsay':
+                        this.cowsay(args.join(' '));
+                        break;
+                    case 'matrix':
+                        this.matrixEffect();
+                        break;
+                    case 'glitch':
+                        this.triggerGlitch();
+                        break;
+                    case 'ghost':
+                        this.ghostMode();
+                        break;
+                    case 'settings':
+                        this.toggleSettings();
+                        break;
+                    case 'shutdown':
+                        this.shutdown();
+                        break;
+                    case 'pwd':
+                        this.terminal.writeln('/home/guest');
+                        break;
+                    case 'ps':
+                        this.terminal.writeln('  PID TTY          TIME CMD');
+                        this.terminal.writeln('  123 pts/0    00:00:00 bash');
+                        this.terminal.writeln('  456 pts/0    00:00:00 xterm');
+                        break;
+                    case 'top':
+                        this.terminal.writeln('top - 10:15:30 up 2:45,  1 user,  load average: 0.52, 0.58, 0.59');
+                        this.terminal.writeln('Tasks:  45 total,   1 running,  44 sleeping,   0 stopped,   0 zombie');
+                        this.terminal.writeln('%Cpu(s):  2.3 us,  1.2 sy,  0.0 ni, 96.5 id,  0.0 wa,  0.0 hi,  0.0 si');
+                        this.terminal.writeln('KiB Mem :  2048000 total,  1024000 free,   512000 used,   512000 buff/cache');
+                        this.terminal.writeln('KiB Swap:        0 total,        0 free,        0 used.  1433600 avail Mem');
+                        break;
+                    case 'neofetch':
+                        this.terminal.writeln('guest@vessel ~');
+                        this.terminal.writeln('OS: VESSEL CRT Terminal v2.1.1984');
+                        this.terminal.writeln('Kernel: CRT-OS 5.4.0-42-generic');
+                        this.terminal.writeln('Uptime: 2 hours, 45 minutes');
+                        this.terminal.writeln('Packages: 1234 (dpkg)');
+                        this.terminal.writeln('Shell: bash 5.0.17');
+                        this.terminal.writeln('Terminal: xterm-256color');
+                        this.terminal.writeln('CPU: Intel 8086 @ 4.77MHz');
+                        this.terminal.writeln('Memory: 640K / 640K');
+                        break;
+                    case 'exit':
+                    case 'logout':
+                        this.terminal.writeln('logout');
+                        setTimeout(() => this.shutdown(), 500);
+                        break;
+                    default:
+                        this.terminal.writeln(`Command not found: ${cmd}`);
+                        this.terminal.writeln('Type "help" for available commands.');
+                }
+            }
+            
+            showHelp() {
+                const helpText = [
+                    'Available commands:',
+                    '  help          - Show this help message',
+                    '  clear         - Clear the terminal',
+                    '  date          - Show current date and time',
+                    '  uptime        - Show system uptime',
+                    '  whoami        - Show current user',
+                    '  pwd           - Show current directory',
+                    '  ls            - List files',
+                    '  ps            - Show running processes',
+                    '  top           - Show system resources',
+                    '  neofetch      - Show system information',
+                    '  cat <file>    - Display file contents',
+                    '  echo <text>   - Echo text to terminal',
+                    '  curl <url>    - Fetch URL content',
+                    '  cowsay <text> - Display text in ASCII art',
+                    '  matrix        - Enter matrix mode',
+                    '  glitch        - Trigger CRT glitch effect',
+                    '  ghost         - Enter ghost text mode',
+                    '  settings      - Toggle CRT settings panel',
+                    '  shutdown      - Power off the terminal',
+                    '  exit          - Exit current session',
+                    '  logout        - Logout current user',
+                    '',
+                    'Keyboard shortcuts:',
+                    '  Ctrl+C        - Interrupt current process',
+                    '  Ctrl+D        - End of input',
+                    '  Ctrl+L        - Clear screen',
+                    '  Arrow keys    - Navigate command history'
+                ];
+                
+                helpText.forEach(line => this.terminal.writeln(line));
+            }
+            
+            listFiles() {
+                const files = [
+                    'readme.txt',
+                    'secrets.dat',
+                    'config.sys',
+                    'matrix.exe',
+                    'ghost.bin',
+                    'classified/',
+                    'logs/'
+                ];
+                this.terminal.writeln(files.join('  '));
+            }
+            
+            catFile(args) {
+                if (!args[0]) {
+                    this.terminal.writeln('Usage: cat <filename>');
+                    return;
+                }
+                
+                const fileContents = {
+                    'readme.txt': [
+                        'Welcome to the VESSEL system.',
+                        'This is a CRT terminal emulation.',
+                        'Enjoy the authentic 1980s experience.',
+                        '',
+                        'Warning: Some files may contain classified information.'
+                    ],
+                    'secrets.dat': [
+                        'ACCESS DENIED',
+                        'Security level insufficient.',
+                        'Please contact system administrator.'
+                    ],
+                    'config.sys': [
+                        'DEVICE=HIMEM.SYS',
+                        'DEVICE=EMM386.EXE NOEMS',
+                        'DOS=HIGH,UMB',
+                        'FILES=40',
+                        'BUFFERS=30'
+                    ]
+                };
+                
+                const content = fileContents[args[0]];
+                if (content) {
+                    content.forEach(line => this.terminal.writeln(line));
+                } else {
+                    this.terminal.writeln(`File not found: ${args[0]}`);
+                }
+            }
+            
+            cowsay(message) {
+                if (!message) message = 'MOO!';
+                const cow = [
+                    ` ${'_'.repeat(message.length + 2)}`,
+                    `< ${message} >`,
+                    ` ${'‾'.repeat(message.length + 2)}`,
+                    '        \\   ^__^',
+                    '         \\  (oo)\\_______',
+                    '            (__)\\       )\\/\\',
+                    '                ||----w |',
+                    '                ||     ||'
+                ];
+                cow.forEach(line => this.terminal.writeln(line));
+            }
+            
+            matrixEffect() {
+                this.terminal.writeln('Initiating Matrix rain...');
+                for (let i = 0; i < 10; i++) {
+                    setTimeout(() => {
+                        const chars = 'アイウエオカキクケコ01010101';
+                        const line = Array(50).fill().map(() => 
+                            chars[Math.floor(Math.random() * chars.length)]
+                        ).join('');
+                        this.terminal.writeln(line);
+                    }, i * 100);
+                }
+            }
+            
+            triggerGlitch() {
+                this.terminal.writeln('SYSTEM_ERROR: MEMORY_FAULT_0x7F4A91C2');
+                this.crtScreen.classList.add('glitch');
+                setTimeout(() => {
+                    this.crtScreen.classList.remove('glitch');
+                    this.terminal.writeln('System recovered from fault.');
+                }, 400);
+            }
+            
+            ghostMode() {
+                this.terminal.writeln('Entering ghost mode...');
+                this.terminalContent.classList.add('ghost-text');
+                setTimeout(() => {
+                    this.terminalContent.classList.remove('ghost-text');
+                    this.terminal.writeln('Ghost mode deactivated.');
+                }, 3000);
+            }
+            
+            toggleSettings() {
+                this.settingsVisible = !this.settingsVisible;
+                if (this.settingsVisible) {
+                    this.settingsPanel.classList.add('visible');
+                } else {
+                    this.settingsPanel.classList.remove('visible');
+                }
+            }
+            
+            shutdown() {
+                this.terminal.writeln('Shutting down system...');
+                setTimeout(() => {
+                    this.togglePower();
+                }, 1000);
+            }
+            
+            setupEventListeners() {
+                this.powerBtn.addEventListener('click', () => {
+                    this.togglePower();
+                });
+                
+                this.closeSettingsBtn.addEventListener('click', () => {
+                    this.settingsPanel.classList.remove('visible');
+                    this.settingsVisible = false;
+                });
+                
+                // CRT effect controls
+                document.getElementById('flicker-control').addEventListener('input', (e) => {
+                    this.setFlicker(e.target.value);
+                });
+                
+                document.getElementById('glow-control').addEventListener('input', (e) => {
+                    this.setGlow(e.target.value);
+                });
+                
+                document.getElementById('distortion-control').addEventListener('input', (e) => {
+                    this.setDistortion(e.target.value);
+                });
+                
+                document.getElementById('noise-control').addEventListener('input', (e) => {
+                    this.setNoise(e.target.value);
+                });
+            }
+            
+            togglePower() {
+                this.isOn = !this.isOn;
+                
+                if (this.isOn) {
+                    this.powerBtn.classList.remove('off');
+                    this.crtContainer.classList.remove('powered-off');
+                    this.crtContainer.classList.add('power-on');
+                    setTimeout(() => {
+                        this.crtContainer.classList.remove('power-on');
+                        if (this.terminal) {
+                            this.terminal.focus();
+                        }
+                    }, 1200);
+                } else {
+                    this.powerBtn.classList.add('off');
+                    this.crtContainer.classList.add('powered-off');
+                    // Close the current page after power off
+                    setTimeout(() => {
+                        window.close();
+                        // Fallback if window.close() doesn't work
+                        if (!window.closed) {
+                            window.location.href = 'about:blank';
+                        }
+                    }, 1000);
+                }
+            }
+            
+            setupCRTEffects() {
+                // Enhanced random screen flicker
+                setInterval(() => {
+                    if (Math.random() < 0.18 && this.isOn) {
+                        this.terminalContent.style.filter = 'brightness(2.0) contrast(3.0) saturate(1.5)';
+                        setTimeout(() => {
+                            this.terminalContent.style.filter = '';
+                        }, 100);
+                    }
+                }, 600);
+                
+                // Enhanced scan line effect
+                setInterval(() => {
+                    if (Math.random() < 0.12 && this.isOn) {
+                        this.addScanLine();
+                    }
+                }, 1200);
+                
+                // Random glitch effects
+                setInterval(() => {
+                    if (Math.random() < 0.05 && this.isOn) {
+                        this.randomGlitch();
+                    }
+                }, 2500);
+                
+                // Random noise variations
+                setInterval(() => {
+                    if (Math.random() < 0.1 && this.isOn) {
+                        this.randomNoiseVariation();
+                    }
+                }, 2000);
+            }
+            
+            addScanLine() {
+                const scanLine = document.createElement('div');
+                scanLine.style.cssText = `
+                    position: absolute;
+                    left: 0;
+                    right: 0;
+                    height: 4px;
+                    background: rgba(0, 255, 0, 0.7);
+                    animation: scanline 0.5s ease-out forwards;
+                    z-index: 10;
+                    top: 0;
+                    box-shadow: 0 0 15px rgba(0, 255, 0, 0.9);
+                `;
+                
+                const style = document.createElement('style');
+                style.textContent = `
+                    @keyframes scanline {
+                        0% { top: 0; opacity: 1; }
+                        100% { top: 100%; opacity: 0; }
+                    }
+                `;
+                document.head.appendChild(style);
+                
+                this.crtScreen.appendChild(scanLine);
+                setTimeout(() => {
+                    scanLine.remove();
+                    style.remove();
+                }, 500);
+            }
+            
+            randomGlitch() {
+                this.crtScreen.style.transform = 'skew(0.8deg, 0.3deg)';
+                this.crtScreen.style.filter = 'hue-rotate(120deg) brightness(1.8) contrast(2.0)';
+                setTimeout(() => {
+                    this.crtScreen.style.transform = '';
+                    this.crtScreen.style.filter = '';
+                }, 200);
+            }
+            
+            randomNoiseVariation() {
+                const noiseElement = document.querySelector('.crt-noise');
+                if (noiseElement) {
+                    noiseElement.style.opacity = (0.06 + Math.random() * 0.12).toString();
+                    setTimeout(() => {
+                        noiseElement.style.opacity = 'var(--noise-opacity, 0.08)';
+                    }, 300);
+                }
+            }
+            
+            setFlicker(value) {
+                const intensity = value / 10;
+                this.terminalContent.style.animationDuration = `${0.03 + (1 - intensity) * 0.4}s`;
+            }
+            
+            setGlow(value) {
+                const glow = value / 10;
+                this.crtScreen.style.boxShadow = `
+                    inset 0 0 80px rgba(0, 255, 0, ${glow * 0.4}),
+                    0 0 150px rgba(0, 0, 0, 0.95)
+                `;
+            }
+            
+            setDistortion(value) {
+                const distortion = value / 10;
+                this.terminalContent.style.backgroundSize = 
+                    `100% ${2 + distortion * 10}px, ${2 + distortion * 10}px 100%`;
+            }
+            
+            setNoise(value) {
+                const noise = value / 10;
+                const noiseOpacity = noise * 0.18;
+                document.documentElement.style.setProperty('--noise-opacity', noiseOpacity.toString());
+            }
+        }
+        
+        // Initialize terminal when page loads
+        window.addEventListener('load', () => {
+            // Check if xterm.js is loaded
+            if (typeof Terminal === 'undefined') {
+                console.error('xterm.js not loaded. Please check your internet connection.');
+                document.getElementById('terminal-content').innerHTML = `
+                    <div style="color: #00ff00; padding: 20px;">
+                        <div>VESSEL TERMINAL v2.1.1984</div>
+                        <div>Copyright (C) 1984-2024 Cyber Systems Inc.</div>
+                        <div style="margin-top: 20px;">Error: xterm.js library not loaded.</div>
+                        <div>Please check your internet connection and refresh the page.</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            new CRTTerminal();
+        });
+    </script>
+</body>
+</html>

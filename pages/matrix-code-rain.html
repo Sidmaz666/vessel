@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrix Code Rain - Vessel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            cursor: crosshair;
+        }
+
+        #matrix-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        #fragment-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .data-fragment {
+            position: absolute;
+            background: rgba(0, 255, 0, 0.3);
+            border: 1px solid #0f0;
+            padding: 4px 8px;
+            font-size: 12px;
+            border-radius: 3px;
+            cursor: pointer;
+            pointer-events: auto;
+            transition: all 0.3s ease;
+            animation: pulse 2s infinite;
+        }
+
+        .data-fragment:hover {
+            background: rgba(0, 255, 0, 0.6);
+            transform: scale(1.1);
+            box-shadow: 0 0 20px #0f0;
+        }
+
+        .data-fragment.collected {
+            animation: collect 0.5s ease-out forwards;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+
+        @keyframes collect {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(0); opacity: 0; }
+        }
+
+        #info-panel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #0f0;
+            padding: 15px;
+            border-radius: 5px;
+            z-index: 3;
+            min-width: 200px;
+        }
+
+        #collected-count {
+            color: #0f0;
+            font-weight: bold;
+        }
+
+        .fragment-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #0f0;
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 4;
+            text-align: center;
+            animation: messageAppear 0.5s ease-out;
+        }
+
+        @keyframes messageAppear {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+            100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+
+        .fragment-text {
+            color: #0f0;
+            margin: 10px 0;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .close-btn {
+            background: none;
+            border: 1px solid #0f0;
+            color: #0f0;
+            padding: 8px 16px;
+            cursor: pointer;
+            border-radius: 3px;
+            margin-top: 10px;
+        }
+
+        .close-btn:hover {
+            background: rgba(0, 255, 0, 0.2);
+        }
+
+        #speed-control {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 3;
+        }
+
+        #speed-slider {
+            background: #000;
+            border: 1px solid #0f0;
+        }
+
+        label {
+            color: #0f0;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrix-canvas"></canvas>
+    <div id="fragment-overlay"></div>
+
+    <div id="info-panel">
+        <div>Data Fragments Collected:</div>
+        <div id="collected-count">0 / 10</div>
+        <div style="font-size: 10px; margin-top: 10px; opacity: 0.7;">
+            Click on glowing fragments to decode hidden messages
+        </div>
+    </div>
+
+    <div id="speed-control">
+        <label for="speed-slider">Rain Speed:</label><br>
+        <input type="range" id="speed-slider" min="1" max="10" value="5">
+    </div>
+
+    <script>
+        class MatrixRain {
+            constructor() {
+                this.canvas = document.getElementById('matrix-canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.fragmentOverlay = document.getElementById('fragment-overlay');
+                
+                this.resizeCanvas();
+                window.addEventListener('resize', () => this.resizeCanvas());
+                
+                this.characters = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+                this.fontSize = 14;
+                this.columns = Math.floor(this.canvas.width / this.fontSize);
+                this.drops = [];
+                this.speed = 5;
+                
+                this.fragments = [];
+                this.collectedFragments = 0;
+                this.totalFragments = 10;
+                
+                this.fragmentMessages = [
+                    "The Matrix has you...",
+                    "Follow the white rabbit.",
+                    "Wake up, Neo.",
+                    "There is no spoon.",
+                    "Free your mind.",
+                    "The desert of the real.",
+                    "Welcome to the machine.",
+                    "Reality is an illusion.",
+                    "Question everything.",
+                    "The truth is out there."
+                ];
+                
+                this.initDrops();
+                this.generateFragments();
+                this.animate();
+                this.setupControls();
+            }
+            
+            resizeCanvas() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+                this.fragmentOverlay.style.width = window.innerWidth + 'px';
+                this.fragmentOverlay.style.height = window.innerHeight + 'px';
+            }
+            
+            initDrops() {
+                this.columns = Math.floor(this.canvas.width / this.fontSize);
+                this.drops = [];
+                for (let i = 0; i < this.columns; i++) {
+                    this.drops[i] = Math.random() * this.canvas.height;
+                }
+            }
+            
+            generateFragments() {
+                for (let i = 0; i < this.totalFragments; i++) {
+                    setTimeout(() => {
+                        this.createFragment();
+                    }, Math.random() * 10000 + 2000);
+                }
+            }
+            
+            createFragment() {
+                if (this.collectedFragments >= this.totalFragments) return;
+                
+                const fragment = document.createElement('div');
+                fragment.className = 'data-fragment';
+                fragment.textContent = `[DATA_${Math.random().toString(36).substr(2, 4).toUpperCase()}]`;
+                
+                const x = Math.random() * (window.innerWidth - 100);
+                const y = Math.random() * (window.innerHeight - 100);
+                
+                fragment.style.left = x + 'px';
+                fragment.style.top = y + 'px';
+                
+                fragment.addEventListener('click', () => {
+                    this.collectFragment(fragment);
+                });
+                
+                this.fragmentOverlay.appendChild(fragment);
+                
+                // Remove fragment after 8 seconds if not collected
+                setTimeout(() => {
+                    if (fragment.parentNode) {
+                        fragment.remove();
+                        // Create a new fragment to replace it
+                        setTimeout(() => this.createFragment(), 2000);
+                    }
+                }, 8000);
+            }
+            
+            collectFragment(fragment) {
+                fragment.classList.add('collected');
+                this.collectedFragments++;
+                
+                const messageIndex = this.collectedFragments - 1;
+                this.showFragmentMessage(this.fragmentMessages[messageIndex]);
+                
+                document.getElementById('collected-count').textContent = 
+                    `${this.collectedFragments} / ${this.totalFragments}`;
+                
+                setTimeout(() => {
+                    fragment.remove();
+                }, 500);
+                
+                // Create new fragment after collection
+                if (this.collectedFragments < this.totalFragments) {
+                    setTimeout(() => this.createFragment(), 3000);
+                }
+            }
+            
+            showFragmentMessage(message) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'fragment-message';
+                messageDiv.innerHTML = `
+                    <div class="fragment-text">${message}</div>
+                    <button class="close-btn" onclick="this.parentNode.remove()">ACKNOWLEDGE</button>
+                `;
+                
+                document.body.appendChild(messageDiv);
+                
+                // Auto-remove after 5 seconds
+                setTimeout(() => {
+                    if (messageDiv.parentNode) {
+                        messageDiv.remove();
+                    }
+                }, 5000);
+            }
+            
+            animate() {
+                // Create trailing effect
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                this.ctx.fillStyle = '#0F0';
+                this.ctx.font = this.fontSize + 'px Courier New';
+                
+                for (let i = 0; i < this.drops.length; i++) {
+                    const char = this.characters[Math.floor(Math.random() * this.characters.length)];
+                    
+                    // Bright character at the front
+                    this.ctx.fillStyle = '#0F0';
+                    this.ctx.fillText(char, i * this.fontSize, this.drops[i]);
+                    
+                    // Dim character behind
+                    if (this.drops[i] > this.fontSize) {
+                        this.ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
+                        const prevChar = this.characters[Math.floor(Math.random() * this.characters.length)];
+                        this.ctx.fillText(prevChar, i * this.fontSize, this.drops[i] - this.fontSize);
+                    }
+                    
+                    if (this.drops[i] > this.canvas.height && Math.random() > 0.975) {
+                        this.drops[i] = 0;
+                    }
+                    
+                    this.drops[i] += this.speed;
+                }
+                
+                requestAnimationFrame(() => this.animate());
+            }
+            
+            setupControls() {
+                const speedSlider = document.getElementById('speed-slider');
+                speedSlider.addEventListener('input', (e) => {
+                    this.speed = parseInt(e.target.value);
+                });
+            }
+        }
+        
+        // Initialize when page loads
+        window.addEventListener('load', () => {
+            new MatrixRain();
+        });
+    </script>
+</body>
+</html>

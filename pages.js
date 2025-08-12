@@ -293,10 +293,10 @@ const pages = [
     url: "http://esotericarchives.com"
   },
   {
-    id: "adv-spectrograph",
+    id: "advance-spectrograph",
     name: "Advance Spectrograph",
     desc: "A spectrograph that shows the frequency of the audio input.",
-    url: "/adv-spectrograph"
+    url: "/advance-spectrograph"
   }
 ];
 

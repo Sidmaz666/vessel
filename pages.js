@@ -291,8 +291,13 @@ const pages = [
     name: "Twilit Grotto Esoteric Archives",
     desc: "Collection of historical Western occult documents and manuscripts.",
     url: "http://esotericarchives.com"
+  },
+  {
+    id: "adv-spectrograph",
+    name: "Advance Spectrograph",
+    desc: "A spectrograph that shows the frequency of the audio input.",
+    url: "/adv-spectrograph"
   }
-
 ];
 
 module.exports = pages;

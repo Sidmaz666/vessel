@@ -298,6 +298,7 @@ const pages = [
     desc: "A spectrograph that shows the frequency of the audio input.",
     url: "/advance-spectrograph"
   }
+  
 ];
 
 module.exports = pages;

@@ -297,8 +297,13 @@ const pages = [
     name: "Advance Spectrograph",
     desc: "A spectrograph that shows the frequency of the audio input.",
     url: "/advance-spectrograph"
+  },
+  {
+    id: "audio-modulator",
+    name: "Audio Modulator v8",
+    desc: "A tool that allows you to modulate audio in real-time.",
+    url: "/audio-modulator"
   }
-  
 ];
 
 module.exports = pages;

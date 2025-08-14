@@ -1,0 +1,1564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AUDIO MODULATOR v8</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Source+Code+Pro:wght@400;700&display=swap');
+        
+        :root {
+            --neon-green: #00ff00;
+            --neon-magenta: #ff00ff;
+            --dark-bg: #000;
+            --panel-bg: #0a0a0a;
+        }
+
+        
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: var(--dark-bg);
+            font-family: 'Source Code Pro', monospace;
+            color: var(--neon-green);
+            text-shadow: 0 0 5px var(--neon-green);
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.5);
+            box-shadow: inset 0 0 5px rgba(0, 255, 0, 0.2);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--neon-green);
+            box-shadow: 0 0 5px var(--neon-green);
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00cc00;
+        }
+        
+        /* Console styling */
+        .console {
+            font-family: 'Source Code Pro', monospace;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: linear-gradient(0deg, rgba(0,0,0,0) 50%, rgba(0, 255, 0, 0.05) 50%);
+            background-size: 100% 4px;
+            animation: scanline 8s linear infinite;
+            z-index: -2;
+        }
+        
+        @keyframes scanline {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 100%; }
+        }
+        
+        .glitch {
+            position: relative;
+            display: inline-block;
+            animation: glitch 1.5s infinite;
+            will-change: filter, transform;
+        }
+        
+        .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            left: 2px;
+            text-shadow: -2px 0 var(--neon-magenta);
+            top: 0;
+            animation: glitch-anim 2s infinite linear alternate-reverse;
+            clip: rect(0, 900px, 0, 0);
+        }
+        
+        .glitch::before {
+            content: attr(data-text);
+            position: absolute;
+            left: -2px;
+            text-shadow: 2px 0 #0ff;
+            top: 0;
+            animation: glitch-anim2 3s infinite linear alternate-reverse;
+            clip: rect(0, 900px, 0, 0);
+        }
+        
+        @keyframes glitch {
+            0% { filter: none; transform: translateZ(0); }
+            10% { transform: translate(-1px, 1px) skewX(0.5deg); }
+            20% { transform: translate(1px, -1px) skewX(-0.5deg); }
+            30% { transform: translate(0, 0); }
+            40% { transform: translate(1px, 1px); }
+            50% { transform: translate(-1px, -1px); }
+            60% { transform: translate(0, 0); }
+            100% { filter: none; transform: translateZ(0); }
+        }
+        
+        @keyframes glitch-anim {
+            0% { clip: rect(4px, 9999px, 8px, 0); }
+            20% { clip: rect(12px, 9999px, 24px, 0); }
+            40% { clip: rect(8px, 9999px, 18px, 0); }
+            60% { clip: rect(16px, 9999px, 28px, 0); }
+            80% { clip: rect(10px, 9999px, 14px, 0); }
+            100% { clip: rect(0, 9999px, 0, 0); }
+        }
+        
+        @keyframes glitch-anim2 {
+            0% { clip: rect(6px, 9999px, 12px, 0); }
+            20% { clip: rect(18px, 9999px, 36px, 0); }
+            40% { clip: rect(14px, 9999px, 20px, 0); }
+            60% { clip: rect(22px, 9999px, 30px, 0); }
+            80% { clip: rect(12px, 9999px, 26px, 0); }
+            100% { clip: rect(0, 9999px, 0, 0); }
+        }
+        
+        .neon-green {
+            color: var(--neon-green);
+            text-shadow: 0 0 5px var(--neon-green), 0 0 10px var(--neon-green);
+        }
+        
+        .neon-magenta {
+            color: var(--neon-magenta);
+            text-shadow: 0 0 5px var(--neon-magenta), 0 0 10px var(--neon-magenta);
+        }
+        
+        .terminal {
+            background: rgba(0, 10, 0, 0.85);
+            border: 1px solid var(--neon-green);
+            box-shadow: 0 0 10px var(--neon-green);
+        }
+        
+        .btn-glitch {
+            position: relative;
+            overflow: hidden;
+            font-family: 'Source Code Pro', monospace;
+        }
+        
+        .btn-glitch:hover::after {
+            animation: glitch-hover 0.5s infinite;
+        }
+        
+        @keyframes glitch-hover {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+            100% { transform: translate(0); }
+        }
+        
+        .slider-glow:hover, .slider-glow:focus {
+            outline: none;
+            box-shadow: 0 0 10px #0ff, 0 0 20px #0ff;
+        }
+        
+        .crt-effect {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: 
+                linear-gradient(0deg, rgba(10, 0, 20, 0.15) 50%, transparent 50%),
+                radial-gradient(circle at center, rgba(0, 255, 0, 0.05), transparent 70%);
+            background-size: 100% 4px, 200% 200%;
+            z-index: -1;
+            animation: crt-flicker 5s infinite;
+        }
+        
+        @keyframes crt-flicker {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 0.5; }
+        }
+        
+        .rgb-distortion {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: 
+                linear-gradient(90deg, rgba(255,0,0,0.02), transparent 20%),
+                linear-gradient(0deg, rgba(0,0,255,0.02), transparent 20%);
+            z-index: -1;
+            animation: rgbDistort 20s infinite linear;
+        }
+        
+        @keyframes rgbDistort {
+            0% { transform: translate(0, 0); }
+            25% { transform: translate(1px, -1px); }
+            50% { transform: translate(-1px, 1px); }
+            75% { transform: translate(1px, 1px); }
+            100% { transform: translate(0, 0); }
+        }
+        
+        .matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -3;
+            opacity: 0.05;
+            background-image: 
+                linear-gradient(rgba(0, 255, 0, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 0, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        
+        .control-panel {
+            background: linear-gradient(145deg, var(--panel-bg), #000);
+            border: 1px solid var(--neon-green);
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+        }
+        
+        .visualization {
+            background: linear-gradient(145deg, #0d0d0d, #000);
+            border: 1px solid var(--neon-green);
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.2);
+        }
+        
+        .terminal-line::after {
+            content: "|";
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 10px;
+            border-radius: 5px;
+            background: #111;
+            outline: none;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+        
+        input[type="range"]:hover {
+            opacity: 1;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--neon-green);
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--neon-green), 0 0 20px var(--neon-green);
+            transition: all 0.2s;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            background: #0ff;
+            box-shadow: 0 0 15px #0ff, 0 0 25px #0ff;
+        }
+        
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--neon-green);
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--neon-green), 0 0 20px var(--neon-green);
+            border: none;
+            transition: all 0.2s;
+        }
+        
+        input[type="range"]::-moz-range-thumb:hover {
+            transform: scale(1.2);
+            background: #0ff;
+            box-shadow: 0 0 15px #0ff, 0 0 25px #0ff;
+        }
+        
+        .preset-btn {
+            transition: all 0.2s;
+            font-family: 'Source Code Pro', monospace;
+            font-size: 12px;
+            border-color: var(--neon-green);
+        }
+        
+        .preset-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 12px var(--neon-green), 0 0 24px rgba(0,255,0,0.25);
+            border-color: #00ff80;
+        }
+        
+        .active-preset {
+            background: linear-gradient(180deg, #00ff00, #00cc00);
+            color: #000;
+            text-shadow: none;
+            box-shadow: 0 0 15px #00ff00, 0 0 30px rgba(0,255,0,0.35);
+            border-color: #00ff00;
+        }
+        
+        .tab-active {
+            background: linear-gradient(180deg, #00ff00, #00cc00);
+            color: #000;
+            text-shadow: none;
+            box-shadow: 0 0 15px #00ff00, 0 0 30px rgba(0,255,0,0.35);
+            border-color: #00ff00 !important;
+        }
+        
+        .hidden-tab {
+            display: none;
+        }
+        
+        .visible-tab {
+            display: block;
+        }
+        
+        select {
+            font-family: 'Source Code Pro', monospace;
+            background: #000;
+            color: var(--neon-green);
+            border: 1px solid var(--neon-green);
+            box-shadow: 0 0 5px var(--neon-green);
+        }
+        
+        select:focus {
+            outline: none;
+            box-shadow: 0 0 10px var(--neon-green);
+        }
+        
+        .console-header {
+            background: rgba(0, 20, 0, 0.9);
+            border-bottom: 1px solid var(--neon-green);
+            padding: 8px 12px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        
+        .console-content {
+            padding: 12px;
+            height: calc(100vh - 40px);
+        }
+    </style>
+</head>
+<body class="text-green-500 console">
+    <div class="scanlines"></div>
+    <div class="crt-effect"></div>
+    <div class="rgb-distortion"></div>
+    <div class="matrix-bg"></div>
+
+    <div class="h-screen flex flex-col">
+        <!-- Console Header -->
+        <div class="console-header neon-green flex justify-between items-center">
+            <div class="relative">
+                <span id="headerGlitch" class="glitch" data-text="AUDIO MODULATOR v8">AUDIO MODULATOR v8</span>
+            </div>
+            <div class="text-sm whitespace-nowrap">
+                <span class="neon-magenta">STATUS: </span>
+                <span id="systemStatus" class="text-green-400">READY</span>
+            </div>
+        </div>
+        
+        <!-- Main Console Content -->
+        <div class="console-content flex flex-1 min-h-0">
+            <!-- Left Panel - Controls -->
+            <div class="w-1/3 pr-2 flex flex-col">
+                <!-- Tab Buttons -->
+                <div class="flex mb-3">
+                    <button id="modulationTab" class="tab-active flex-1 py-2 bg-black border-l border-r border-green-500 font-bold rounded-l-lg console">
+                        AUDIO MODULATION
+                    </button>
+                    <button id="generatorTab" class="flex-1 py-2 bg-black border-l border-r border-green-500 font-bold console">
+                        TONE GENERATOR
+                    </button>
+                </div>
+                
+                <!-- Modulation Tab -->
+                <div id="modulationContent" class="visible-tab flex-1 overflow-y-auto control-panel p-3 rounded-lg terminal">
+                    <div class="mb-4">
+                        <button id="startModulation" class="btn-glitch w-full py-2 bg-green-900 hover:bg-green-800 neon-green font-bold rounded-lg transition-all duration-200 console">
+                            START LIVE MODULATION
+                        </button>
+                    </div>
+                    
+                    <!-- Input Device Selection -->
+                    <div class="mb-4">
+                        <label class="block mb-1 neon-green font-bold console">
+                            INPUT DEVICE
+                        </label>
+                        <select id="inputDevice" class="w-full p-2 rounded console"></select>
+                    </div>
+
+                    <!-- Output Device Selection -->
+                    <div class="mb-4">
+                        <label class="block mb-1 neon-green font-bold console">
+                            OUTPUT DEVICE
+                        </label>
+                        <select id="outputDevice" class="w-full p-2 rounded console"></select>
+                    </div>
+                    
+                    <!-- Modulation Presets -->
+                    <div class="mb-4">
+                        <label class="block mb-2 neon-green font-bold console">
+                            MODULATION PRESETS
+                        </label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button class="preset-btn bg-black border border-green-500 p-2 rounded active-preset console" data-preset="normal">NORMAL</button>
+                            <button class="preset-btn bg-black border border-green-500 p-2 rounded console" data-preset="vocoder">VOCODER</button>
+                            <button class="preset-btn bg-black border border-green-500 p-2 rounded console" data-preset="echo">ECHO CHAMBER</button>
+                            <button class="preset-btn bg-black border border-green-500 p-2 rounded console" data-preset="distortion">DISTORTION</button>
+                            <button class="preset-btn bg-black border border-green-500 p-2 rounded console" data-preset="reverb">REVERB HALL</button>
+                            <button class="preset-btn bg-black border border-green-500 p-2 rounded console" data-preset="cyberpunk">CYBERPUNK</button>
+                            <button class="preset-btn bg-black border border-green-500 p-2 rounded console" data-preset="phaser">PHASER</button>
+                            <button class="preset-btn bg-black border border-green-500 p-2 rounded console" data-preset="chorus">CHORUS</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Audio Parameters -->
+                    <div class="space-y-4">
+                        <!-- Mic Volume -->
+                        <div>
+                            <label class="block mb-1 neon-green font-bold console">
+                                MIC VOLUME
+                            </label>
+                            <input type="range" min="0" max="5" step="0.01" value="3" class="w-full slider-glow" id="micGain">
+                            <div class="text-right text-green-400 text-sm console" id="micGainValue">3.00</div>
+                        </div>
+                        
+                        <!-- Output Volume -->
+                        <div>
+                            <label class="block mb-1 neon-green font-bold console">
+                                OUTPUT VOLUME
+                            </label>
+                            <input type="range" min="0" max="5" step="0.01" value="3" class="w-full slider-glow" id="outputVolume">
+                            <div class="text-right text-green-400 text-sm console" id="outputVolumeValue">3.00</div>
+                        </div>
+                        
+                        <!-- Low-pass Cutoff -->
+                        <div>
+                            <label class="block mb-1 neon-green font-bold console">
+                                LOW-PASS CUTOFF
+                            </label>
+                            <input type="range" min="20" max="20000" step="1" value="20000" class="w-full slider-glow" id="lowpassCutoff">
+                            <div class="text-right text-green-400 text-sm console" id="lowpassValue">20,000 Hz</div>
+                        </div>
+                        
+                        <!-- High-pass Cutoff -->
+                        <div>
+                            <label class="block mb-1 neon-green font-bold console">
+                                HIGH-PASS CUTOFF
+                            </label>
+                            <input type="range" min="20" max="20000" step="1" value="20" class="w-full slider-glow" id="highpassCutoff">
+                            <div class="text-right text-green-400 text-sm console" id="highpassValue">20 Hz</div>
+                        </div>
+                        
+                        <!-- Reverb Amount -->
+                        <div>
+                            <label class="block mb-1 neon-green font-bold console">
+                                REVERB AMOUNT
+                            </label>
+                            <input type="range" min="0" max="1" step="0.01" value="0" class="w-full slider-glow" id="reverbAmount">
+                            <div class="text-right text-green-400 text-sm console" id="reverbValue">0%</div>
+                        </div>
+                        
+                        <!-- Delay Time -->
+                        <div>
+                            <label class="block mb-1 neon-green font-bold console">
+                                DELAY TIME
+                            </label>
+                            <input type="range" min="0" max="1000" step="1" value="0" class="w-full slider-glow" id="delayTime">
+                            <div class="text-right text-green-400 text-sm console" id="delayValue">0 ms</div>
+                        </div>
+                        
+                        <!-- Distortion Level -->
+                        <div>
+                            <label class="block mb-1 neon-green font-bold console">
+                                DISTORTION LEVEL
+                            </label>
+                            <input type="range" min="0" max="1" step="0.01" value="0" class="w-full slider-glow" id="distortionLevel">
+                            <div class="text-right text-green-400 text-sm console" id="distortionValue">0%</div>
+                        </div>
+                        
+                        <!-- Phaser Rate -->
+                        <div>
+                            <label class="block mb-1 neon-green font-bold console">
+                                PHASER RATE
+                            </label>
+                            <input type="range" min="0" max="10" step="0.1" value="0" class="w-full slider-glow" id="phaserRate">
+                            <div class="text-right text-green-400 text-sm console" id="phaserValue">0 Hz</div>
+                        </div>
+                        
+                        <!-- Phaser Depth -->
+                        <div>
+                            <label class="block mb-1 neon-green font-bold console">
+                                PHASER DEPTH
+                            </label>
+                            <input type="range" min="0" max="1" step="0.01" value="0" class="w-full slider-glow" id="phaserDepth">
+                            <div class="text-right text-green-400 text-sm console" id="phaserDepthValue">0%</div>
+                        </div>
+                        
+                        <!-- Chorus Rate -->
+                        <div>
+                            <label class="block mb-1 neon-green font-bold console">
+                                CHORUS RATE
+                            </label>
+                            <input type="range" min="0" max="10" step="0.1" value="0" class="w-full slider-glow" id="chorusRate">
+                            <div class="text-right text-green-400 text-sm console" id="chorusRateValue">0 Hz</div>
+                        </div>
+                        
+                        <!-- Chorus Depth -->
+                        <div>
+                            <label class="block mb-1 neon-green font-bold console">
+                                CHORUS DEPTH
+                            </label>
+                            <input type="range" min="0" max="1" step="0.01" value="0" class="w-full slider-glow" id="chorusDepth">
+                            <div class="text-right text-green-400 text-sm console" id="chorusDepthValue">0%</div>
+                        </div>
+                        
+                        <!-- Compressor Threshold -->
+                        <div>
+                            <label class="block mb-1 neon-green font-bold console">
+                                COMPRESSOR THRESHOLD
+                            </label>
+                            <input type="range" min="-60" max="0" step="1" value="-20" class="w-full slider-glow" id="compressorThreshold">
+                            <div class="text-right text-green-400 text-sm console" id="compressorValue">-20 dB</div>
+                        </div>
+                        
+                        <!-- Compressor Ratio -->
+                        <div>
+                            <label class="block mb-1 neon-green font-bold console">
+                                COMPRESSOR RATIO
+                            </label>
+                            <input type="range" min="1" max="20" step="0.1" value="1" class="w-full slider-glow" id="compressorRatio">
+                            <div class="text-right text-green-400 text-sm console" id="compressorRatioValue">1:1</div>
+                        </div>
+
+                        <!-- Noise Cancellation / Gate -->
+                        <div>
+                            <label class="block mb-1 neon-green font-bold console">
+                                NOISE CANCELLATION (GATE)
+                            </label>
+                            <input type="range" min="0" max="1" step="0.01" value="0" class="w-full slider-glow" id="noiseGate">
+                            <div class="text-right text-green-400 text-sm console" id="noiseGateValue">0%</div>
+                        </div>
+
+                        <!-- Pitch Shift (Semitones for tone; frequency shift for mic effect) -->
+                        <div>
+                            <label class="block mb-1 neon-green font-bold console">
+                                PITCH SHIFT (SEMITONES)
+                            </label>
+                            <input type="range" min="-12" max="12" step="1" value="0" class="w-full slider-glow" id="pitchShift">
+                            <div class="text-right text-green-400 text-sm console" id="pitchShiftValue">0 st</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Generator Tab -->
+                <div id="generatorContent" class="hidden-tab flex-1 overflow-y-auto control-panel p-3 rounded-lg terminal">
+                    <div class="mb-4">
+                        <button id="toggleTone" class="btn-glitch w-full py-2 bg-purple-900 hover:bg-purple-800 neon-magenta font-bold rounded-lg transition-all duration-200 console">
+                            GENERATE TONE
+                        </button>
+                    </div>
+                    
+                    <!-- Output Device Selection -->
+                    <div class="mb-4">
+                        <label class="block mb-1 neon-green font-bold console">
+                            OUTPUT DEVICE
+                        </label>
+                        <select id="genOutputDevice" class="w-full p-2 rounded console"></select>
+                    </div>
+                    
+                    <!-- Tone Presets -->
+                    <div class="mb-4">
+                        <label class="block mb-2 neon-green font-bold console">
+                            TONE WAVEFORMS
+                        </label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button class="preset-btn bg-black border border-green-500 p-2 rounded active-preset console" data-tone="sine">SINE</button>
+                            <button class="preset-btn bg-black border border-green-500 p-2 rounded console" data-tone="square">SQUARE</button>
+                            <button class="preset-btn bg-black border border-green-500 p-2 rounded console" data-tone="sawtooth">SAW</button>
+                            <button class="preset-btn bg-black border border-green-500 p-2 rounded console" data-tone="triangle">TRIANGLE</button>
+                            <button class="preset-btn bg-black border border-green-500 p-2 rounded console" data-tone="noise">NOISE</button>
+                            <button class="preset-btn bg-black border border-green-500 p-2 rounded console" data-tone="pulse">PULSE</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Tone Parameters -->
+                    <div class="space-y-4">
+                        <!-- Frequency -->
+                        <div>
+                            <label class="block mb-1 neon-green font-bold console">
+                                FREQUENCY (Hz)
+                            </label>
+                            <input type="range" min="20" max="20000" step="1" value="440" class="w-full slider-glow" id="toneFreq">
+                            <div class="text-right text-green-400 text-sm console" id="toneFreqValue">440 Hz</div>
+                        </div>
+                        
+                        <!-- Tone Volume -->
+                        <div>
+                            <label class="block mb-1 neon-green font-bold console">
+                                TONE VOLUME
+                            </label>
+                            <input type="range" min="0" max="2" step="0.01" value="0" class="w-full slider-glow" id="toneVolume">
+                            <div class="text-right text-green-400 text-sm console" id="toneVolumeValue">0%</div>
+                        </div>
+                        
+                        <!-- Harmonics -->
+                        <div>
+                            <label class="block mb-1 neon-green font-bold console">
+                                HARMONICS
+                            </label>
+                            <input type="range" min="0" max="5" step="1" value="0" class="w-full slider-glow" id="harmonics">
+                            <div class="text-right text-green-400 text-sm console" id="harmonicsValue">0</div>
+                        </div>
+                        
+                        <!-- LFO Rate -->
+                        <div>
+                            <label class="block mb-1 neon-green font-bold console">
+                                LFO RATE (Hz)
+                            </label>
+                            <input type="range" min="0" max="20" step="0.1" value="0" class="w-full slider-glow" id="lfoRate">
+                            <div class="text-right text-green-400 text-sm console" id="lfoRateValue">0 Hz</div>
+                        </div>
+                        
+                        <!-- LFO Depth -->
+                        <div>
+                            <label class="block mb-1 neon-green font-bold console">
+                                LFO DEPTH
+                            </label>
+                            <input type="range" min="0" max="1" step="0.01" value="0" class="w-full slider-glow" id="lfoDepth">
+                            <div class="text-right text-green-400 text-sm console" id="lfoDepthValue">0%</div>
+                        </div>
+                        
+                        <!-- ADSR Envelope -->
+                        <div>
+                            <label class="block mb-1 neon-green font-bold console">
+                                ATTACK TIME (ms)
+                            </label>
+                            <input type="range" min="0" max="5000" step="10" value="10" class="w-full slider-glow" id="attackTime">
+                            <div class="text-right text-green-400 text-sm console" id="attackValue">10 ms</div>
+                        </div>
+                        
+                        <div>
+                            <label class="block mb-1 neon-green font-bold console">
+                                DECAY TIME (ms)
+                            </label>
+                            <input type="range" min="0" max="5000" step="10" value="100" class="w-full slider-glow" id="decayTime">
+                            <div class="text-right text-green-400 text-sm console" id="decayValue">100 ms</div>
+                        </div>
+                        
+                        <div>
+                            <label class="block mb-1 neon-green font-bold console">
+                                SUSTAIN LEVEL
+                            </label>
+                            <input type="range" min="0" max="1" step="0.01" value="0.7" class="w-full slider-glow" id="sustainLevel">
+                            <div class="text-right text-green-400 text-sm console" id="sustainValue">70%</div>
+                        </div>
+                        
+                        <div>
+                            <label class="block mb-1 neon-green font-bold console">
+                                RELEASE TIME (ms)
+                            </label>
+                            <input type="range" min="0" max="5000" step="10" value="500" class="w-full slider-glow" id="releaseTime">
+                            <div class="text-right text-green-400 text-sm console" id="releaseValue">500 ms</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Panel - Visualizations and Terminal -->
+            <div class="w-2/3 pl-2 flex flex-col">
+                <!-- Visualizations Grid -->
+                <div class="flex-1 grid grid-cols-2 gap-3 mb-3">
+                    <div class="visualization p-3 rounded-lg terminal">
+                        <h3 class="text-sm mb-2 neon-green console">SPECTROGRAM</h3>
+                        <canvas id="spectrogram" width="300" height="150" class="w-full rounded bg-black"></canvas>
+                    </div>
+                    
+                    <div class="visualization p-3 rounded-lg terminal">
+                        <h3 class="text-sm mb-2 neon-green console">WAVEFORM</h3>
+                        <canvas id="waveform" width="300" height="150" class="w-full rounded bg-black"></canvas>
+                    </div>
+                    
+                    <div class="visualization p-3 rounded-lg terminal">
+                        <h3 class="text-sm mb-2 neon-green console">SPECTRUM ANALYZER</h3>
+                        <canvas id="spectrum" width="300" height="150" class="w-full rounded bg-black"></canvas>
+                    </div>
+                    
+                    <div class="visualization p-3 rounded-lg terminal">
+                        <h3 class="text-sm mb-2 neon-green console">FREQUENCY DETECTION</h3>
+                        <div class="h-full flex items-center justify-center">
+                            <div class="text-center">
+                                <div class="text-2xl font-bold neon-green console" id="detectedFreq">-- Hz</div>
+                                <div class="text-xs neon-magenta mt-2 console">DOMINANT FREQUENCY</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Terminal Log (all messages appear here) -->
+                <div class="bg-black p-3 rounded-lg border-2 border-green-500 neon-green terminal h-40 overflow-y-auto console" id="terminalLog"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Terminal typewriter effect
+        function typeWriter(element, text, i = 0, callback) {
+            if (i < text.length) {
+                element.innerHTML += text.charAt(i);
+                i++;
+                setTimeout(() => typeWriter(element, text, i, callback), 20);
+            } else if (callback) {
+                callback();
+            }
+        }
+
+        // Audio processing variables
+        let audioContext;
+        let analyser, analyser2;
+        let source;
+        let micGainNode, outputGainNode, lowpass, highpass, noiseGateGain, distortion, reverbConvolver, reverbWetGain, delayNode, delayFeedback, delayWetGain, toneGainNode, phaser, chorus, compressor;
+        let destinationNode; // switchable destination via HTMLAudioElement
+        let toneOscillator = null;
+        let toneActive = false;
+        let modulationActive = false;
+        let spectrogramCanvas, waveformCanvas, spectrumCanvas;
+        let spectrogramCtx, waveformCtx, spectrumCtx;
+        let spectrogramBuffer = [];
+        let spectrogramHeight = 150;
+        let spectrogramWidth = 300;
+        let frameCount = 0;
+        let currentToneType = 'sine';
+        let lfoOscillator = null;
+        let htmlAudioEl = null; // for setSinkId output routing
+        let mediaDest = null;
+        let connectedToSystemOutput = false;
+        let currentOutputDeviceId = 'default';
+        let currentInputDeviceId = null;
+        let noiseGateThreshold = 0; // 0..1 slider space -> RMS threshold
+        let chorusLFO = null;
+        let chorusLFODepthGain = null;
+
+        // Tab switching
+        document.getElementById('modulationTab').addEventListener('click', function() {
+            this.classList.add('tab-active');
+            document.getElementById('generatorTab').classList.remove('tab-active');
+            document.getElementById('modulationContent').classList.remove('hidden-tab');
+            document.getElementById('modulationContent').classList.add('visible-tab');
+            document.getElementById('generatorContent').classList.remove('visible-tab');
+            document.getElementById('generatorContent').classList.add('hidden-tab');
+            updateTerminal('[UI] TAB: AUDIO MODULATION');
+        });
+
+        document.getElementById('generatorTab').addEventListener('click', function() {
+            this.classList.add('tab-active');
+            document.getElementById('modulationTab').classList.remove('tab-active');
+            document.getElementById('generatorContent').classList.remove('hidden-tab');
+            document.getElementById('generatorContent').classList.add('visible-tab');
+            document.getElementById('modulationContent').classList.remove('visible-tab');
+            document.getElementById('modulationContent').classList.add('hidden-tab');
+            updateTerminal('[UI] TAB: TONE GENERATOR');
+        });
+
+        // Initialize audio system
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                // Boot messages typed into terminal
+                const terminalLog = document.getElementById('terminalLog');
+                const bootLines = [
+                    '[SYSTEM] INITIALIZING AUDIO MODULATOR v8...',
+                    '[DRIVER] LOADING AUDIO ENGINE v9.0.7...',
+                    '[SECURITY] PROTOCOLS ACTIVE',
+                    '[DISPLAY] CRT SCANLINES ENABLED',
+                    '[DISPLAY] RGB DISTORTION ENABLED',
+                    '[AUDIO] MICROPHONE ACCESS PENDING...'
+                ];
+                bootLines.forEach(line => updateTerminal(line));
+
+                // Create audio context
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Create analysers for visualizations
+                analyser = audioContext.createAnalyser();
+                analyser.fftSize = 2048;
+                analyser.smoothingTimeConstant = 0.8;
+                
+                analyser2 = audioContext.createAnalyser();
+                analyser2.fftSize = 2048;
+                analyser2.smoothingTimeConstant = 0.8;
+                
+                // Create audio processing nodes
+                micGainNode = audioContext.createGain();
+                outputGainNode = audioContext.createGain();
+                lowpass = audioContext.createBiquadFilter();
+                lowpass.type = 'lowpass';
+                highpass = audioContext.createBiquadFilter();
+                highpass.type = 'highpass';
+                noiseGateGain = audioContext.createGain();
+                distortion = audioContext.createWaveShaper();
+                reverbConvolver = audioContext.createConvolver();
+                reverbWetGain = audioContext.createGain();
+                delayNode = audioContext.createDelay();
+                delayFeedback = audioContext.createGain();
+                delayWetGain = audioContext.createGain();
+                toneGainNode = audioContext.createGain();
+                phaser = audioContext.createBiquadFilter();
+                phaser.type = 'allpass';
+                chorus = audioContext.createDelay();
+                compressor = audioContext.createDynamicsCompressor();
+                
+                // Set default values (loud by default)
+                micGainNode.gain.value = 3;
+                outputGainNode.gain.value = 3;
+                lowpass.frequency.value = 20000;
+                highpass.frequency.value = 20;
+                reverbWetGain.gain.value = 0;
+                delayNode.delayTime.value = 0;
+                delayFeedback.gain.value = 0.5;
+                toneGainNode.gain.value = 0;
+                phaser.frequency.value = 1000;
+                chorus.delayTime.value = 0.005;
+                compressor.threshold.value = -20;
+                compressor.ratio.value = 1;
+                
+                // Generate reverb impulse response
+                createReverbBuffer();
+                
+                // Connect audio nodes for modulation chain
+                micGainNode.connect(lowpass);
+                lowpass.connect(highpass);
+                // Noise gate stage (controlled per-frame)
+                highpass.connect(noiseGateGain);
+                noiseGateGain.connect(distortion);
+                distortion.connect(reverbConvolver);
+                reverbConvolver.connect(reverbWetGain);
+                reverbWetGain.connect(delayNode);
+                delayNode.connect(delayWetGain);
+                delayWetGain.connect(phaser);
+                phaser.connect(chorus);
+                chorus.connect(compressor);
+                compressor.connect(outputGainNode);
+                outputGainNode.connect(analyser);
+                // Default to system output initially
+                outputGainNode.connect(audioContext.destination);
+                connectedToSystemOutput = true;
+                
+                // Delay feedback loop
+                delayNode.connect(delayFeedback);
+                delayFeedback.connect(delayNode);
+                
+                // Tone generator shares the same output bus for unified control/visuals
+                toneGainNode.connect(outputGainNode);
+                
+                // Initialize visualizations
+                initVisualizations();
+                
+                // Start audio processing
+                startAudioProcessing();
+                
+                // Prepare modulation LFOs
+                setupChorusLFO();
+                // Wire up controls
+                setupControls();
+                // Populate device lists and prepare routing early so sinks are available
+                initDeviceLists();
+                ensureOutputRouting();
+                
+                updateTerminal('[SYSTEM] AUDIO ENGINE READY');
+                document.getElementById('systemStatus').textContent = 'READY';
+                document.getElementById('systemStatus').className = 'text-green-400';
+            } catch (err) {
+                updateTerminal(`[ERROR] AUDIO INIT FAILED: ${err.message}`);
+                document.getElementById('systemStatus').textContent = 'ERROR';
+                document.getElementById('systemStatus').className = 'text-red-500';
+            }
+        });
+
+        function createReverbBuffer() {
+            const length = audioContext.sampleRate * 2; // 2 seconds
+            const buffer = audioContext.createBuffer(1, length, audioContext.sampleRate);
+            const data = buffer.getChannelData(0);
+            
+            // Generate decaying noise for reverb
+            for (let i = 0; i < length; i++) {
+                // Exponential decay
+                const decay = Math.exp(-i / (audioContext.sampleRate * 0.5));
+                // Random noise with decay
+                data[i] = (Math.random() * 2 - 1) * decay;
+            }
+            
+            reverbConvolver.buffer = buffer;
+        }
+
+        function initVisualizations() {
+            spectrogramCanvas = document.getElementById('spectrogram');
+            waveformCanvas = document.getElementById('waveform');
+            spectrumCanvas = document.getElementById('spectrum');
+            
+            spectrogramCtx = spectrogramCanvas.getContext('2d');
+            waveformCtx = waveformCanvas.getContext('2d');
+            spectrumCtx = spectrumCanvas.getContext('2d');
+            
+            // Initialize spectrogram buffer
+            spectrogramBuffer = new Array(spectrogramWidth).fill(0)
+                .map(() => new Array(spectrogramHeight).fill(0));
+        }
+
+        function startAudioProcessing() {
+            // Start visualization loop
+            drawVisualizations();
+        }
+
+        // Lightweight chorus LFO to modulate the chorus delay time slightly
+        function setupChorusLFO() {
+            try {
+                if (!chorus) return;
+                if (!chorusLFO) {
+                    chorusLFO = audioContext.createOscillator();
+                    chorusLFODepthGain = audioContext.createGain();
+                    chorusLFO.type = 'sine';
+                    chorusLFO.frequency.value = 0; // rate controlled by UI
+                    chorusLFODepthGain.gain.value = 0.002; // depth ~2ms
+                    chorusLFO.connect(chorusLFODepthGain);
+                    // Modulate delayTime via AudioParam automation
+                    chorusLFODepthGain.connect(chorus.delayTime);
+                    chorusLFO.start();
+                }
+            } catch (e) {
+                // ignore
+            }
+        }
+
+        // Ensure AudioContext is running before starting audio actions (autoplay policies)
+        async function ensureAudioContextRunning() {
+            try {
+                if (audioContext && audioContext.state !== 'running') {
+                    await audioContext.resume();
+                    updateTerminal('[AUDIO] CONTEXT RESUMED');
+                }
+            } catch (e) {
+                updateTerminal(`[ERROR] RESUME FAILED: ${e.message}`);
+            }
+        }
+
+        // Prepare HTMLAudioElement sink for selectable output devices
+        function ensureOutputRouting() {
+            try {
+                if (!htmlAudioEl) {
+                    htmlAudioEl = new Audio();
+                    htmlAudioEl.autoplay = true;
+                    htmlAudioEl.muted = false;
+                }
+                if (!mediaDest) {
+                    mediaDest = audioContext.createMediaStreamDestination();
+                    analyser.connect(mediaDest);
+                }
+                if (!htmlAudioEl.srcObject) {
+                    htmlAudioEl.srcObject = mediaDest.stream;
+                }
+                // No terminal spam: only log once per boot
+                if (!ensureOutputRouting._logged) {
+                    updateTerminal('[AUDIO] OUTPUT ROUTING READY');
+                    ensureOutputRouting._logged = true;
+                }
+            } catch (e) {
+                updateTerminal(`[WARN] OUTPUT ROUTING ISSUE: ${e.message}`);
+            }
+        }
+
+        function drawVisualizations() {
+            frameCount++;
+            requestAnimationFrame(drawVisualizations);
+            
+            // Get audio data
+            const bufferLength = analyser.frequencyBinCount;
+            const frequencyData = new Uint8Array(bufferLength);
+            const timeDomainData = new Uint8Array(bufferLength);
+            
+            analyser.getByteFrequencyData(frequencyData);
+            analyser.getByteTimeDomainData(timeDomainData);
+            
+            // Simple noise gate (RMS-based)
+            let rms = 0;
+            for (let i = 0; i < timeDomainData.length; i++) {
+                const centered = (timeDomainData[i] - 128) / 128;
+                rms += centered * centered;
+            }
+            rms = Math.sqrt(rms / timeDomainData.length);
+            const gateGain = rms < noiseGateThreshold ? 0 : 1;
+            if (noiseGateGain && Math.abs(noiseGateGain.gain.value - gateGain) > 0.001) {
+                noiseGateGain.gain.setTargetAtTime(gateGain, audioContext.currentTime, 0.02);
+            }
+            
+            // Draw all visualizations
+            drawSpectrogram(frequencyData);
+            drawWaveform(timeDomainData);
+            drawSpectrum(frequencyData);
+            
+            // Detect dominant frequency
+            detectDominantFrequency(frequencyData);
+        }
+
+        function drawSpectrogram(data) {
+            // Shift buffer left
+            spectrogramBuffer.shift();
+            spectrogramBuffer.push([...data]);
+            
+            // Draw spectrogram
+            spectrogramCtx.fillStyle = 'black';
+            spectrogramCtx.fillRect(0, 0, spectrogramWidth, spectrogramHeight);
+            
+            for (let x = 0; x < spectrogramWidth; x++) {
+                const column = spectrogramBuffer[x];
+                for (let y = 0; y < spectrogramHeight; y++) {
+                    const value = column ? column[Math.floor(y * column.length / spectrogramHeight)] : 0;
+                    // Map to color (green to magenta)
+                    const green = Math.min(255, value * 1.5);
+                    const blue = Math.min(255, value * 0.5);
+                    spectrogramCtx.fillStyle = `rgb(0, ${green}, ${blue})`;
+                    spectrogramCtx.fillRect(x, spectrogramHeight - y - 1, 1, 1);
+                }
+            }
+            
+            // Add scanline effect
+            spectrogramCtx.fillStyle = 'rgba(0, 255, 0, 0.1)';
+            spectrogramCtx.fillRect(0, frameCount % spectrogramHeight, spectrogramWidth, 1);
+        }
+
+        function drawWaveform(data) {
+            waveformCtx.fillStyle = 'black';
+            waveformCtx.fillRect(0, 0, waveformCanvas.width, waveformCanvas.height);
+            
+            waveformCtx.lineWidth = 1.5;
+            waveformCtx.strokeStyle = '#00ff00';
+            waveformCtx.beginPath();
+            
+            const sliceWidth = waveformCanvas.width * 1.0 / data.length;
+            let x = 0;
+            
+            for (let i = 0; i < data.length; i++) {
+                const v = data[i] / 128.0;
+                const y = v * waveformCanvas.height / 2;
+                
+                if (i === 0) {
+                    waveformCtx.moveTo(x, y);
+                } else {
+                    waveformCtx.lineTo(x, y);
+                }
+                
+                x += sliceWidth;
+            }
+            
+            waveformCtx.lineTo(waveformCanvas.width, waveformCanvas.height / 2);
+            waveformCtx.stroke();
+            
+            // Add center line
+            waveformCtx.strokeStyle = 'rgba(0, 255, 0, 0.3)';
+            waveformCtx.beginPath();
+            waveformCtx.moveTo(0, waveformCanvas.height / 2);
+            waveformCtx.lineTo(waveformCanvas.width, waveformCanvas.height / 2);
+            waveformCtx.stroke();
+        }
+
+        function drawSpectrum(data) {
+            spectrumCtx.fillStyle = 'black';
+            spectrumCtx.fillRect(0, 0, spectrumCanvas.width, spectrumCanvas.height);
+            
+            const barWidth = (spectrumCanvas.width / data.length) * 2.5;
+            let x = 0;
+            
+            for (let i = 0; i < data.length; i++) {
+                const barHeight = data[i];
+                const hue = (i / data.length * 120) + 100; // Green to cyan
+                spectrumCtx.fillStyle = `hsl(${hue}, 100%, 50%)`;
+                spectrumCtx.fillRect(x, spectrumCanvas.height - barHeight, barWidth, barHeight);
+                x += barWidth + 1;
+            }
+            
+            // Add glow effect on active bars
+            spectrumCtx.globalCompositeOperation = 'lighter';
+            for (let i = 0; i < data.length; i++) {
+                const barHeight = data[i];
+                if (barHeight > 100) {
+                    const hue = (i / data.length * 120) + 100;
+                    spectrumCtx.fillStyle = `hsla(${hue}, 100%, 70%, 0.3)`;
+                    spectrumCtx.fillRect(
+                        i * (barWidth + 1), 
+                        spectrumCanvas.height - barHeight - 5, 
+                        barWidth, 
+                        10
+                    );
+                }
+            }
+            spectrumCtx.globalCompositeOperation = 'source-over';
+        }
+
+        function detectDominantFrequency(data) {
+            let maxIndex = 0;
+            let maxValue = 0;
+            
+            // Find the index of the maximum value
+            for (let i = 0; i < data.length; i++) {
+                if (data[i] > maxValue) {
+                    maxValue = data[i];
+                    maxIndex = i;
+                }
+            }
+            
+            // Calculate frequency from index
+            const frequency = maxIndex * audioContext.sampleRate / (2 * data.length);
+            document.getElementById('detectedFreq').textContent = `${Math.round(frequency)} Hz`;
+        }
+
+        function setupControls() {
+            // Device change handlers
+            const inputSel = document.getElementById('inputDevice');
+            const outSel = document.getElementById('outputDevice');
+            const genOutSel = document.getElementById('genOutputDevice');
+
+            inputSel.addEventListener('change', async function() {
+                currentInputDeviceId = this.value;
+                updateTerminal(`[AUDIO] INPUT DEVICE: ${this.options[this.selectedIndex].text}`);
+                if (modulationActive) {
+                    await restartMicStream();
+                }
+            });
+
+            const setSink = async (deviceId, originSel) => {
+                try {
+                    ensureOutputRouting();
+                    if (htmlAudioEl && htmlAudioEl.setSinkId) {
+                        await htmlAudioEl.setSinkId(deviceId);
+                        currentOutputDeviceId = deviceId;
+                        updateTerminal(`[AUDIO] OUTPUT DEVICE SET`);
+                        // avoid double playback when a sink is selected
+                        if (connectedToSystemOutput) {
+                            try { outputGainNode.disconnect(audioContext.destination); } catch(_) {}
+                            connectedToSystemOutput = false;
+                        }
+                    } else {
+                        updateTerminal('[WARN] setSinkId not supported in this browser');
+                    }
+                    // keep selects in sync
+                    const target = originSel === outSel ? genOutSel : outSel;
+                    if (target && target.value !== deviceId) target.value = deviceId;
+                } catch (e) {
+                    updateTerminal(`[ERROR] OUTPUT DEVICE SET FAILED: ${e.message}`);
+                }
+            };
+
+            outSel.addEventListener('change', function() {
+                setSink(this.value, outSel);
+            });
+            genOutSel.addEventListener('change', function() {
+                setSink(this.value, genOutSel);
+            });
+
+            // Start Modulation Button
+            document.getElementById('startModulation').addEventListener('click', async function() {
+                if (!modulationActive) {
+                    // Request microphone access
+                    await ensureAudioContextRunning();
+                    navigator.mediaDevices.getUserMedia({ audio: { deviceId: currentInputDeviceId ? { exact: currentInputDeviceId } : undefined } })
+                        .then(stream => {
+                            source = audioContext.createMediaStreamSource(stream);
+                            source.connect(micGainNode);
+                            modulationActive = true;
+                            this.textContent = 'STOP MODULATION';
+                            this.classList.remove('bg-green-900');
+                            this.classList.add('bg-red-900');
+                            updateTerminal('[AUDIO] LIVE MODULATION ACTIVE');
+                            document.getElementById('systemStatus').textContent = 'MODULATING';
+                            document.getElementById('systemStatus').className = 'text-yellow-400';
+                            initDeviceLists();
+                        })
+                        .catch(err => {
+                            updateTerminal(`[ERROR] MIC ACCESS FAILED: ${err.message}`);
+                        });
+                } else {
+                    if (source) {
+                        source.disconnect();
+                        source = null;
+                    }
+                    modulationActive = false;
+                    this.textContent = 'START LIVE MODULATION';
+                    this.classList.remove('bg-red-900');
+                    this.classList.add('bg-green-900');
+                    updateTerminal('[AUDIO] MODULATION STOPPED');
+                    document.getElementById('systemStatus').textContent = 'READY';
+                    document.getElementById('systemStatus').className = 'text-green-400';
+                }
+            });
+            
+            // Control event listeners with real-time updates
+            const controls = [
+                { id: 'micGain', node: () => micGainNode, prop: 'gain', scale: 1, display: 'micGainValue', suffix: '' },
+                { id: 'outputVolume', node: () => outputGainNode, prop: 'gain', scale: 1, display: 'outputVolumeValue', suffix: '' },
+                { id: 'lowpassCutoff', node: () => lowpass, prop: 'frequency', scale: 1, display: 'lowpassValue', suffix: ' Hz', format: 'number' },
+                { id: 'highpassCutoff', node: () => highpass, prop: 'frequency', scale: 1, display: 'highpassValue', suffix: ' Hz', format: 'number' },
+                { id: 'reverbAmount', node: () => reverbWetGain, prop: 'gain', scale: 1, display: 'reverbValue', suffix: '%', format: 'percent' },
+                { id: 'delayTime', node: () => delayNode, prop: 'delayTime', scale: 1000, display: 'delayValue', suffix: ' ms', format: 'number' },
+                { id: 'distortionLevel', node: () => distortion, prop: 'curve', scale: 50, display: 'distortionValue', suffix: '%', format: 'percent', custom: true },
+                { id: 'phaserRate', node: () => phaser, prop: 'frequency', scale: 100, display: 'phaserValue', suffix: ' Hz', format: 'number' },
+                { id: 'phaserDepth', node: () => phaser, prop: 'Q', scale: 10, display: 'phaserDepthValue', suffix: '', format: 'percent' },
+                { id: 'chorusRate', node: () => chorus, prop: 'delayTime', scale: 1000, display: 'chorusRateValue', suffix: ' Hz', format: 'number', custom: true },
+                { id: 'chorusDepth', node: () => null, prop: null, scale: 1, display: 'chorusDepthValue', suffix: '%', format: 'percent' },
+                { id: 'compressorThreshold', node: () => compressor, prop: 'threshold', scale: 1, display: 'compressorValue', suffix: ' dB', format: 'number' },
+                { id: 'compressorRatio', node: () => compressor, prop: 'ratio', scale: 1, display: 'compressorRatioValue', suffix: ':1', format: 'number' },
+                { id: 'noiseGate', node: () => null, prop: null, scale: 1, display: 'noiseGateValue', suffix: '%', format: 'percent', custom: true },
+                { id: 'pitchShift', node: () => null, prop: null, scale: 1, display: 'pitchShiftValue', suffix: ' st', format: 'number', custom: true }
+            ];
+            
+            controls.forEach(control => {
+                const element = document.getElementById(control.id);
+                element.addEventListener('input', function() {
+                    const value = parseFloat(this.value);
+                    const displayValue = control.format === 'percent' ? Math.round(value * 100) : 
+                                     control.format === 'number' ? Math.round(value * control.scale) : value;
+                    
+                    document.getElementById(control.display).textContent = displayValue + control.suffix;
+                    
+                    if (control.custom && control.id === 'distortionLevel') {
+                        if (control.node() && control.prop) {
+                            control.node().curve = makeDistortionCurve(value * control.scale);
+                        }
+                    } else if (control.custom && control.id === 'chorusRate') {
+                        // Map rate slider (0..10 Hz) to chorus delay modulation
+                        if (!chorusLFO) setupChorusLFO();
+                        if (chorusLFO) chorusLFO.frequency.value = value; 
+                    } else {
+                        if (control.node() && control.node()[control.prop]) {
+                            if (control.prop === 'delayTime') {
+                                control.node()[control.prop].value = value / control.scale;
+                            } else {
+                                control.node()[control.prop].value = value * control.scale;
+                            }
+                        }
+                    }
+                    
+                    // Custom handlers for features not directly mapped to node properties
+                    if (control.id === 'noiseGate') {
+                        noiseGateThreshold = value; // 0..1 normalized RMS threshold
+                    }
+                    if (control.id === 'pitchShift') {
+                        // Semitone shift for tone oscillator only; mic pitch is complex, apply vibrato-lite using phaser center frequency
+                        const semitones = value;
+                        document.getElementById('pitchShiftValue').textContent = semitones + ' st';
+                        if (toneActive && toneOscillator) {
+                            const base = parseInt(document.getElementById('toneFreq').value);
+                            const shifted = base * Math.pow(2, semitones / 12);
+                            toneOscillator.frequency.value = shifted;
+                            document.getElementById('toneFreqValue').textContent = Math.round(shifted) + ' Hz';
+                        }
+                    }
+
+                    updateTerminal(`[PARAM] ${control.id.toUpperCase()}: ${displayValue}${control.suffix}`);
+                });
+            });
+            
+            // Tone Generator Controls
+            document.getElementById('toneFreq').addEventListener('input', function() {
+                const freq = parseInt(this.value);
+                document.getElementById('toneFreqValue').textContent = freq + ' Hz';
+                if (toneActive && toneOscillator) {
+                    toneOscillator.frequency.value = freq;
+                }
+                updateTerminal(`[TONE] FREQUENCY: ${freq} Hz`);
+            });
+            
+            document.getElementById('toneVolume').addEventListener('input', function() {
+                const vol = parseFloat(this.value);
+                document.getElementById('toneVolumeValue').textContent = Math.round(vol * 100) + '%';
+                if (toneGainNode) toneGainNode.gain.value = vol;
+                updateTerminal(`[TONE] VOLUME: ${Math.round(vol * 100)}%`);
+            });
+            
+            document.getElementById('harmonics').addEventListener('input', function() {
+                const harms = parseInt(this.value);
+                document.getElementById('harmonicsValue').textContent = harms;
+                updateTerminal(`[TONE] HARMONICS: ${harms}`);
+            });
+            
+            document.getElementById('lfoRate').addEventListener('input', function() {
+                const rate = parseFloat(this.value);
+                document.getElementById('lfoRateValue').textContent = rate + ' Hz';
+                updateTerminal(`[TONE] LFO RATE: ${rate} Hz`);
+            });
+            
+            document.getElementById('lfoDepth').addEventListener('input', function() {
+                const depth = parseFloat(this.value);
+                document.getElementById('lfoDepthValue').textContent = Math.round(depth * 100) + '%';
+                updateTerminal(`[TONE] LFO DEPTH: ${Math.round(depth * 100)}%`);
+            });
+            
+            // ADSR Envelope Controls
+            document.getElementById('attackTime').addEventListener('input', function() {
+                const attack = parseInt(this.value);
+                document.getElementById('attackValue').textContent = attack + ' ms';
+                updateTerminal(`[TONE] ATTACK: ${attack} ms`);
+            });
+            
+            document.getElementById('decayTime').addEventListener('input', function() {
+                const decay = parseInt(this.value);
+                document.getElementById('decayValue').textContent = decay + ' ms';
+                updateTerminal(`[TONE] DECAY: ${decay} ms`);
+            });
+            
+            document.getElementById('sustainLevel').addEventListener('input', function() {
+                const sustain = parseFloat(this.value);
+                document.getElementById('sustainValue').textContent = Math.round(sustain * 100) + '%';
+                updateTerminal(`[TONE] SUSTAIN: ${Math.round(sustain * 100)}%`);
+            });
+            
+            document.getElementById('releaseTime').addEventListener('input', function() {
+                const release = parseInt(this.value);
+                document.getElementById('releaseValue').textContent = release + ' ms';
+                updateTerminal(`[TONE] RELEASE: ${release} ms`);
+            });
+            
+            // Toggle Tone
+            document.getElementById('toggleTone').addEventListener('click', async function() {
+                if (!toneActive) {
+                    await ensureAudioContextRunning();
+                    toneOscillator = audioContext.createOscillator();
+                    toneOscillator.type = currentToneType;
+                    toneOscillator.frequency.value = parseInt(document.getElementById('toneFreq').value);
+                    toneOscillator.connect(toneGainNode);
+                    toneOscillator.start();
+                    const volSlider = document.getElementById('toneVolume');
+                    if (parseFloat(volSlider.value) === 0) {
+                        volSlider.value = 0.2;
+                        toneGainNode.gain.value = 0.2;
+                        document.getElementById('toneVolumeValue').textContent = '20%';
+                    }
+                    toneActive = true;
+                    this.textContent = 'STOP TONE';
+                    this.classList.remove('bg-purple-900');
+                    this.classList.add('bg-red-900');
+                    updateTerminal(`[TONE] GENERATOR ACTIVE: ${currentToneType.toUpperCase()}`);
+                    document.getElementById('systemStatus').textContent = 'TONE GEN';
+                    document.getElementById('systemStatus').className = 'text-purple-400';
+                } else {
+                    if (toneOscillator) {
+                        toneOscillator.stop();
+                        toneOscillator = null;
+                    }
+                    toneActive = false;
+                    this.textContent = 'GENERATE TONE';
+                    this.classList.remove('bg-red-900');
+                    this.classList.add('bg-purple-900');
+                    updateTerminal('[TONE] GENERATOR STOPPED');
+                    document.getElementById('systemStatus').textContent = 'READY';
+                    document.getElementById('systemStatus').className = 'text-green-400';
+                }
+            });
+            
+            // Modulation Presets
+            document.querySelectorAll('[data-preset]').forEach(button => {
+                button.addEventListener('click', function() {
+                    const preset = this.getAttribute('data-preset');
+                    
+                    // Remove active class from all buttons
+            document.querySelectorAll('[data-preset]').forEach(btn => {
+                btn.classList.remove('active-preset');
+            });
+                    
+                    // Add active class to clicked button
+                    this.classList.add('active-preset');
+                    
+                    // Apply preset settings
+                    applyModulationPreset(preset);
+                    updateTerminal(`[PRESET] MODULATION: ${preset.toUpperCase()}`);
+                });
+            });
+            
+            // Tone Presets
+            document.querySelectorAll('[data-tone]').forEach(button => {
+                button.addEventListener('click', function() {
+                    const toneType = this.getAttribute('data-tone');
+                    
+                    // Remove active class from all buttons
+            document.querySelectorAll('[data-tone]').forEach(btn => {
+                btn.classList.remove('active-preset');
+            });
+                    
+                    // Add active class to clicked button
+                    this.classList.add('active-preset');
+                    
+                    // Update current tone type
+                    currentToneType = toneType;
+                    
+                    // If tone is active, change oscillator type
+                    if (toneActive && toneOscillator) {
+                        toneOscillator.type = toneType;
+                    }
+                    
+                    updateTerminal(`[TONE] WAVEFORM: ${toneType.toUpperCase()}`);
+                });
+            });
+        }
+
+        async function initDeviceLists() {
+            try {
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const inputs = devices.filter(d => d.kind === 'audioinput');
+                const outputs = devices.filter(d => d.kind === 'audiooutput');
+                const inputSel = document.getElementById('inputDevice');
+                const outSel = document.getElementById('outputDevice');
+                const genOutSel = document.getElementById('genOutputDevice');
+                const fill = (sel, list) => {
+                    const prev = sel.value;
+                    sel.innerHTML = '';
+                    list.forEach(d => {
+                        const opt = document.createElement('option');
+                        opt.value = d.deviceId;
+                        opt.textContent = `${d.label || (d.kind === 'audioinput' ? 'Mic' : 'Output')} ${d.deviceId === 'default' ? '(Default)' : ''}`;
+                        sel.appendChild(opt);
+                    });
+                    if (prev) sel.value = prev;
+                };
+                fill(inputSel, inputs);
+                fill(outSel, outputs);
+                fill(genOutSel, outputs);
+                if (!currentInputDeviceId && inputs[0]) currentInputDeviceId = inputs[0].deviceId;
+                if (!currentOutputDeviceId && outputs[0]) currentOutputDeviceId = outputs[0].deviceId;
+                // Select current outputs on both selects
+                if (currentOutputDeviceId) {
+                    outSel.value = currentOutputDeviceId;
+                    genOutSel.value = currentOutputDeviceId;
+                }
+                // Apply sink if possible
+                if (currentOutputDeviceId) {
+                    try { if (htmlAudioEl && htmlAudioEl.setSinkId) await htmlAudioEl.setSinkId(currentOutputDeviceId); } catch(_){}
+                }
+            } catch (e) {
+                updateTerminal(`[WARN] DEVICE ENUMERATION FAILED: ${e.message}`);
+            }
+        }
+
+        async function restartMicStream() {
+            try {
+                if (source && source.mediaStream) {
+                    source.mediaStream.getTracks().forEach(t => t.stop());
+                }
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: currentInputDeviceId ? { exact: currentInputDeviceId } : undefined } });
+                source = audioContext.createMediaStreamSource(stream);
+                source.connect(micGainNode);
+                updateTerminal('[AUDIO] MIC STREAM RESTARTED');
+            } catch (e) {
+                updateTerminal(`[ERROR] RESTART MIC FAILED: ${e.message}`);
+            }
+        }
+
+        function stopTracksFromDest() {
+            try {
+                if (htmlAudioEl && htmlAudioEl.srcObject) {
+                    htmlAudioEl.srcObject.getAudioTracks().forEach(t => t.stop());
+                }
+            } catch (_) {}
+        }
+
+        function applyModulationPreset(preset) {
+            const presets = {
+                normal: { micGain: 3, lowpass: 20000, highpass: 20, reverb: 0, delay: 0, distortion: 0, phaser: 0, phaserDepth: 0, chorus: 0, chorusDepth: 0, compressor: -20, ratio: 1 },
+                vocoder: { micGain: 3.2, lowpass: 8000, highpass: 100, reverb: 0.3, delay: 50, distortion: 0.2, phaser: 2, phaserDepth: 0.3, chorus: 0.5, chorusDepth: 0.2, compressor: -15, ratio: 3 },
+                echo: { micGain: 3, lowpass: 20000, highpass: 20, reverb: 0.7, delay: 300, distortion: 0, phaser: 0, phaserDepth: 0, chorus: 0, chorusDepth: 0, compressor: -18, ratio: 2 },
+                distortion: { micGain: 3.5, lowpass: 15000, highpass: 80, reverb: 0.8, delay: 20, distortion: 0.6, phaser: 0, phaserDepth: 0, chorus: 0, chorusDepth: 0, compressor: -12, ratio: 5 },
+                reverb: { micGain: 3, lowpass: 20000, highpass: 20, reverb: 0.9, delay: 10, distortion: 0, phaser: 0, phaserDepth: 0, chorus: 0, chorusDepth: 0, compressor: -22, ratio: 1.5 },
+                cyberpunk: { micGain: 3.3, lowpass: 12000, highpass: 150, reverb: 0.6, delay: 150, distortion: 0.5, phaser: 5, phaserDepth: 0.7, chorus: 3, chorusDepth: 0.5, compressor: -16, ratio: 4 },
+                phaser: { micGain: 3.1, lowpass: 18000, highpass: 50, reverb: 0.2, delay: 30, distortion: 0.1, phaser: 8, phaserDepth: 0.9, chorus: 0, chorusDepth: 0, compressor: -18, ratio: 2 },
+                chorus: { micGain: 3.2, lowpass: 16000, highpass: 30, reverb: 0.3, delay: 40, distortion: 0.1, phaser: 0, phaserDepth: 0, chorus: 6, chorusDepth: 0.8, compressor: -17, ratio: 2.5 }
+            };
+            
+            const settings = presets[preset] || presets.normal;
+            
+            // Update sliders and values
+            document.getElementById('micGain').value = settings.micGain;
+            document.getElementById('lowpassCutoff').value = settings.lowpass;
+            document.getElementById('highpassCutoff').value = settings.highpass;
+            document.getElementById('reverbAmount').value = settings.reverb;
+            document.getElementById('delayTime').value = settings.delay;
+            document.getElementById('distortionLevel').value = settings.distortion;
+            document.getElementById('phaserRate').value = settings.phaser;
+            document.getElementById('phaserDepth').value = settings.phaserDepth;
+            document.getElementById('chorusRate').value = settings.chorus;
+            document.getElementById('chorusDepth').value = settings.chorusDepth;
+            document.getElementById('compressorThreshold').value = settings.compressor;
+            document.getElementById('compressorRatio').value = settings.ratio;
+            
+            // Update displays
+            document.getElementById('micGainValue').textContent = settings.micGain.toFixed(2);
+            document.getElementById('lowpassValue').textContent = settings.lowpass.toLocaleString() + ' Hz';
+            document.getElementById('highpassValue').textContent = settings.highpass.toLocaleString() + ' Hz';
+            document.getElementById('reverbValue').textContent = Math.round(settings.reverb * 100) + '%';
+            document.getElementById('delayValue').textContent = settings.delay + ' ms';
+            document.getElementById('distortionValue').textContent = Math.round(settings.distortion * 100) + '%';
+            document.getElementById('phaserValue').textContent = (settings.phaser * 100).toFixed(0) + ' Hz';
+            document.getElementById('phaserDepthValue').textContent = Math.round(settings.phaserDepth * 100) + '%';
+            document.getElementById('chorusRateValue').textContent = (settings.chorus * 1000).toFixed(0) + ' Hz';
+            document.getElementById('chorusDepthValue').textContent = Math.round(settings.chorusDepth * 100) + '%';
+            document.getElementById('compressorValue').textContent = settings.compressor + ' dB';
+            document.getElementById('compressorRatioValue').textContent = settings.ratio.toFixed(1) + ':1';
+            
+            // Apply to audio nodes
+            if (micGainNode) micGainNode.gain.value = settings.micGain;
+            if (lowpass) lowpass.frequency.value = settings.lowpass;
+            if (highpass) highpass.frequency.value = settings.highpass;
+            if (reverbWetGain) reverbWetGain.gain.value = settings.reverb;
+            if (delayNode) delayNode.delayTime.value = settings.delay / 1000;
+            if (distortion) distortion.curve = makeDistortionCurve(settings.distortion * 50);
+            if (phaser) phaser.frequency.value = settings.phaser * 100;
+            if (phaser) phaser.Q.value = settings.phaserDepth * 10;
+            if (compressor) compressor.threshold.value = settings.compressor;
+            if (compressor) compressor.ratio.value = settings.ratio;
+        }
+
+        function makeDistortionCurve(amount) {
+            const n = 44100;
+            const curve = new Float32Array(n);
+            const deg = Math.PI / 180;
+            
+            for (let i = 0; i < n; ++i) {
+                const x = i * 2 / n - 1;
+                curve[i] = (3 + amount) * x * 20 * deg / (Math.PI + amount * x * x);
+            }
+            
+            return curve;
+        }
+
+        function updateTerminal(message) {
+            const terminalLog = document.getElementById('terminalLog');
+            const div = document.createElement('div');
+            div.className = 'terminal-line text-green-400';
+            terminalLog.appendChild(div);
+            div.textContent = message;
+            terminalLog.scrollTop = terminalLog.scrollHeight;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>P2P Chat – WebRTC (Link-Only Signaling)</title>
+  <style>
+    :root{--bg:#0b1020;--card:#121932;--muted:#1a2347;--text:#e8edff;--text-dim:#b8c1ff;--accent:#7aa2ff;--ok:#38b000;--warn:#ffb703;--err:#ff4d6d}
+    *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Inter,Arial,sans-serif;background:linear-gradient(180deg,#0b1020,#090e1d 60%);color:var(--text);min-height:100dvh}
+    header{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:18px 20px;background:linear-gradient(180deg,rgba(255,255,255,0.04),transparent)}
+    .title{font-weight:800;letter-spacing:.2px}
+    .badge{font-size:12px;padding:2px 8px;border-radius:999px;background:var(--muted);color:var(--text-dim)}
+    main{display:grid;grid-template-columns:340px 1fr;gap:14px;padding:14px}
+    @media (max-width: 920px){main{grid-template-columns:1fr}}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.06), rgba(0,0,0,0.06));border:1px solid rgba(255,255,255,0.08);border-radius:18px;padding:14px}
+    .row{display:flex;gap:10px;align-items:center}
+    .col{display:flex;flex-direction:column;gap:8px}
+    .muted{color:var(--text-dim);font-size:13px}
+    button, input[type="text"], textarea{border-radius:12px;border:1px solid rgba(255,255,255,0.12);background:#0e1430;color:var(--text)}
+    button{padding:10px 14px;font-weight:700;cursor:pointer}
+    button.primary{background:linear-gradient(180deg,#3756ff,#2c49e6);border:none}
+    button.ghost{background:transparent}
+    button:disabled{opacity:.6;cursor:not-allowed}
+    textarea{width:100%;min-height:110px;padding:10px;resize:vertical}
+    input[type="text"]{padding:10px;width:100%}
+    .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
+    .grid{display:grid;gap:10px}
+    .grid.cols-2{grid-template-columns:1fr 1fr}
+    .pill{padding:6px 10px;background:var(--muted);border-radius:999px;font-size:12px}
+    .status-dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:6px}
+    .ok{background:var(--ok)} .warn{background:var(--warn)} .err{background:var(--err)} .idle{background:#7a7a7a}
+
+    /* Chat */
+    #chat{display:flex;flex-direction:column;height:70dvh}
+    #log{flex:1;overflow:auto;background:rgba(0,0,0,0.25);padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.08)}
+    .msg{margin:8px 0;padding:10px 12px;border-radius:12px;max-width:72ch;white-space:pre-wrap;word-wrap:break-word}
+    .me{background:rgba(122,162,255,0.15);align-self:flex-end;border:1px solid rgba(122,162,255,0.35)}
+    .peer{background:rgba(255,255,255,0.06);align-self:flex-start;border:1px solid rgba(255,255,255,0.16)}
+    .sys{font-size:12px;color:var(--text-dim);margin:6px 0}
+    #composer{display:flex;gap:8px;margin-top:10px}
+    #input{flex:1}
+    .tiny{font-size:12px}
+    a.link{word-break:break-all}
+    .hidden{display:none}
+    .hr{height:1px;background:linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);margin:10px 0}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="row">
+      <div class="title">P2P Chat</div>
+      <div class="badge">WebRTC • Link-Only Signaling</div>
+    </div>
+    <div id="status" class="pill"><span class="status-dot idle"></span><span id="statusText">Idle</span></div>
+  </header>
+
+  <main>
+    <section class="card col" id="left">
+      <div class="col">
+        <div class="col">
+          <strong>Profile</strong>
+          <div class="row">
+            <input id="username" type="text" class="mono" placeholder="Enter your name…" />
+            <button id="btnSaveName">Save</button>
+          </div>
+          <div class="tiny muted">Your name is saved locally and included with messages.</div>
+        </div>
+        <div class="hr"></div>
+        <h3>1) Start or Join</h3>
+        <div class="grid">
+          <button id="btnStart" class="primary">Start a New Chat</button>
+          <button id="btnReset" class="ghost">Reset</button>
+        </div>
+        <div class="hr"></div>
+        <div class="col">
+          <strong>Share Link</strong>
+          <div class="muted tiny">Send this to your friend to join. No server required — the link contains the offer.</div>
+          <textarea id="shareLink" class="mono" readonly placeholder="Click Start to generate…"></textarea>
+          <div class="grid cols-2">
+            <button id="btnCopyOffer">Copy</button>
+            <button id="btnOpenNew">Open in New Tab</button>
+          </div>
+        </div>
+        <div class="hr"></div>
+        <div class="col">
+          <strong>Paste Return Link</strong>
+          <div class="muted tiny">When your friend opens the Share Link, their page will generate a Return Link. Paste it here to complete the connection.</div>
+          <textarea id="answerLink" class="mono" placeholder="Paste the Return Link here…"></textarea>
+          <button id="btnAcceptAnswer" class="primary">Accept Return Link</button>
+        </div>
+        <div class="hr"></div>
+        <div class="col">
+          <strong>Join via Invite</strong>
+          <div class="muted tiny">If you arrived via a Share Link, this page will auto-detect it and prepare a Return Link.</div>
+          <textarea id="returnLink" class="mono" readonly placeholder="Open an invite link to auto-generate…"></textarea>
+          <div class="grid cols-2">
+            <button id="btnCopyAnswer">Copy Return Link</button>
+            <button id="btnShareAnswer">Open Return Link</button>
+          </div>
+        </div>
+        <div class="hr"></div>
+        <div class="col tiny muted">
+          <strong>Notes</strong>
+          <ul>
+            <li>No servers for signaling: offers/answers travel in links you share.</li>
+            <li>Uses public STUN only (no TURN). Works best when both peers can do direct P2P.</li>
+            <li>If a link is too long for a messenger, use the Copy/Paste text directly.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="card col" id="right">
+      <h3>2) Chat</h3>
+      <div id="chat">
+        <div id="log"></div>
+        <div id="composer">
+          <input id="input" type="text" placeholder="Type a message and press Enter…" />
+          <button id="send">Send</button>
+        </div>
+        <div class="tiny muted" id="footInfo">Encrypted via DTLS over WebRTC DataChannel • P2P</div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // ===== Utilities: base64url encode/decode (no compression to keep things simple & portable)
+    const b64u = {
+      enc: (str) => {
+        const b64 = btoa(unescape(encodeURIComponent(str)));
+        return b64.replaceAll('+','-').replaceAll('/','_').replace(/=+$/,'');
+      },
+      dec: (b64u) => {
+        const b64 = b64u.replaceAll('-','+').replaceAll('_','/');
+        const pad = b64.length % 4 === 0 ? '' : '='.repeat(4 - (b64.length % 4));
+        return decodeURIComponent(escape(atob(b64 + pad)));
+      }
+    };
+
+    const qs = new URLSearchParams(location.hash.slice(1));
+    const $ = (sel) => document.querySelector(sel);
+    const logEl = $('#log');
+    const inputEl = $('#input');
+    const sendBtn = $('#send');
+    const statusDot = document.querySelector('#status .status-dot');
+    const statusText = $('#statusText');
+    const nameInput = $('#username');
+    const btnSaveName = $('#btnSaveName');
+
+    function setStatus(txt, mode='idle'){
+      statusDot.className = `status-dot ${mode}`;
+      statusText.textContent = txt;
+    }
+    function sys(msg){
+      const el = document.createElement('div');
+      el.className = 'sys';
+      el.textContent = msg;
+      logEl.appendChild(el); logEl.scrollTop = logEl.scrollHeight;
+    }
+    function say(kind, text){
+      const el = document.createElement('div');
+      el.className = `msg ${kind}`;
+      el.textContent = text;
+      logEl.appendChild(el); logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    // ===== Username persistence
+    function getName(){
+      let n = localStorage.getItem('p2p_username');
+      if(!n){ n = `Guest-${Math.random().toString(36).slice(2,6)}`; localStorage.setItem('p2p_username', n); }
+      return n;
+    }
+    function setName(n){ localStorage.setItem('p2p_username', n); }
+
+    // ===== WebRTC primitives
+    let pc, dc;
+    const iceServers = [
+      {urls: 'stun:stun.l.google.com:19302'},
+      {urls: 'stun:stun.cloudflare.com:3478'}
+    ]; // No TURN: pure P2P attempt
+
+    function newPC(){
+      if(pc) pc.close();
+      pc = new RTCPeerConnection({iceServers});
+
+      pc.onconnectionstatechange = () => {
+        const s = pc.connectionState;
+        if(s === 'connected') setStatus('Connected', 'ok');
+        else if(s === 'failed') setStatus('Connection failed', 'err');
+        else if(s === 'disconnected') setStatus('Disconnected', 'warn');
+        else setStatus(s, 'idle');
+      };
+      pc.oniceconnectionstatechange = () => {
+        sys(`ICE: ${pc.iceConnectionState}`);
+      };
+      pc.onicegatheringstatechange = () => {
+        sys(`Gathering: ${pc.iceGatheringState}`);
+      };
+      pc.onicecandidateerror = (e) => {
+        try{ sys(`ICE candidate error: ${e.errorText || e.errorCode || 'unknown'}`); }
+        catch{}
+      };
+      pc.ondatachannel = (evt) => {
+        dc = evt.channel; wireDC();
+      };
+    }
+
+    function wireDC(){
+      sys('DataChannel readying…');
+      dc.onopen = () => { 
+        sys('DataChannel open'); setStatus('Ready', 'ok'); inputEl.disabled = false; sendBtn.disabled = false;
+        // announce presence
+        const me = getName();
+        try{ dc.send(JSON.stringify({t:'hello', name: me})); }catch{}
+        sys(`You are known as ${me}`);
+      };
+      dc.onclose = () => { sys('DataChannel closed'); setStatus('Closed', 'warn'); inputEl.disabled = true; sendBtn.disabled = true; };
+      dc.onmessage = (e) => { 
+        try{
+          const msg = JSON.parse(String(e.data));
+          if(msg.t === 'chat'){
+            say('peer', `${msg.name || 'Peer'}: ${msg.text}`);
+          }else if(msg.t === 'hello'){
+            sys(`${msg.name || 'Peer'} joined`);
+          }
+        }catch{
+          // legacy raw text
+          say('peer', String(e.data));
+        }
+      };
+      dc.onerror = (e) => { sys('DC error: '+e.message); };
+    }
+
+    async function waitIceComplete(){
+      if(pc.iceGatheringState === 'complete') return;
+      await new Promise((resolve) => {
+        let overall; let quiet;
+        function done(){
+          clearTimeout(overall); clearTimeout(quiet);
+          pc.removeEventListener('icegatheringstatechange', onState);
+          pc.removeEventListener('icecandidate', onCandidate);
+          resolve();
+        }
+        function onState(){ if(pc.iceGatheringState === 'complete') done(); }
+        function onCandidate(){ clearTimeout(quiet); quiet = setTimeout(done, 1200); }
+        pc.addEventListener('icegatheringstatechange', onState);
+        pc.addEventListener('icecandidate', onCandidate);
+        // Hard timeout so private-mode quirks don't block invite generation even if zero candidates are emitted
+        overall = setTimeout(done, 4000);
+      });
+    }
+
+    // ===== Signaling via links
+    async function createOfferLink(){
+      newPC();
+      dc = pc.createDataChannel('chat', {negotiated:false});
+      wireDC();
+      const offer = await pc.createOffer({offerToReceiveAudio:false, offerToReceiveVideo:false});
+      await pc.setLocalDescription(offer);
+      await waitIceComplete();
+      const data = { t: 'offer', sdp: pc.localDescription.sdp };
+      const enc = b64u.enc(JSON.stringify(data));
+      const link = `${location.origin}${location.pathname}#o=${enc}`;
+      return link;
+    }
+
+    async function acceptOfferFromLink(hashStr){
+      const enc = new URLSearchParams(hashStr.replace(/^#/, '')).get('o');
+      if(!enc) throw new Error('No offer in link');
+      const payload = JSON.parse(b64u.dec(enc));
+      if(payload.t !== 'offer') throw new Error('Invalid payload');
+
+      newPC();
+      await pc.setRemoteDescription({type:'offer', sdp: payload.sdp});
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
+      await waitIceComplete();
+
+      const data = { t: 'answer', sdp: pc.localDescription.sdp };
+      const encAns = b64u.enc(JSON.stringify(data));
+      const retLink = `${location.origin}${location.pathname}#a=${encAns}`;
+      return retLink;
+    }
+
+    async function acceptAnswerFromLink(link){
+      const enc = new URLSearchParams(link.split('#')[1]).get('a');
+      if(!enc) throw new Error('No answer in link');
+      const payload = JSON.parse(b64u.dec(enc));
+      if(payload.t !== 'answer') throw new Error('Invalid payload');
+      await pc.setRemoteDescription({type:'answer', sdp: payload.sdp});
+    }
+
+    // ===== UI Wiring
+    const btnStart = $('#btnStart');
+    const shareLink = $('#shareLink');
+    const btnCopyOffer = $('#btnCopyOffer');
+    const btnOpenNew = $('#btnOpenNew');
+    const answerLink = $('#answerLink');
+    const btnAcceptAnswer = $('#btnAcceptAnswer');
+
+    const returnLink = $('#returnLink');
+    const btnCopyAnswer = $('#btnCopyAnswer');
+    const btnShareAnswer = $('#btnShareAnswer');
+
+    btnStart.onclick = async () => {
+      btnStart.disabled = true; setStatus('Creating offer…','warn');
+      try{
+        const link = await createOfferLink();
+        shareLink.value = link;
+        setStatus('Invite ready','ok');
+        sys('Share the link with your friend.');
+      }catch(e){
+        console.error(e); setStatus('Failed to create offer','err');
+      }finally{ btnStart.disabled = false; }
+    };
+
+    btnCopyOffer.onclick = async () => {
+      if(!shareLink.value) return; await navigator.clipboard.writeText(shareLink.value); sys('Share Link copied to clipboard.');
+    };
+    btnOpenNew.onclick = () => { if(shareLink.value) window.open(shareLink.value, '_blank'); };
+
+    btnAcceptAnswer.onclick = async () => {
+      const v = answerLink.value.trim(); if(!v) return;
+      setStatus('Applying answer…','warn');
+      try{ await acceptAnswerFromLink(v); setStatus('Connecting…','warn'); }
+      catch(e){ console.error(e); setStatus('Invalid Return Link','err'); }
+    };
+
+    btnCopyAnswer.onclick = async () => { if(!returnLink.value) return; await navigator.clipboard.writeText(returnLink.value); sys('Return Link copied. Send it back to your friend.'); };
+    btnShareAnswer.onclick = () => { if(returnLink.value) window.open(returnLink.value, '_blank'); };
+
+    // Send message
+    function sendCurrent(){
+      const text = inputEl.value.trim(); if(!text || !dc || dc.readyState !== 'open') return;
+      const me = getName();
+      try{ dc.send(JSON.stringify({t:'chat', name: me, text})); }
+      catch{ dc.send(text); }
+      say('me', `${me}: ${text}`); inputEl.value = '';
+    }
+    inputEl.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); sendCurrent(); }});
+    sendBtn.onclick = sendCurrent;
+
+    // Auto-join flow when visiting a Share Link
+    (async function autoJoin(){
+      if(qs.get('o')){
+        setStatus('Joining via invite…','warn');
+        try{
+          const link = await acceptOfferFromLink(location.hash);
+          returnLink.value = link; setStatus('Return Link ready','ok');
+          sys('Send the Return Link back to the inviter. Connection will complete when they accept it.');
+        }catch(e){ console.error(e); setStatus('Failed to accept invite','err'); }
+      }
+    })();
+
+    // Reset
+    $('#btnReset').onclick = () => { try{ pc && pc.close(); }catch{} window.location.replace(location.origin + location.pathname); };
+
+    // Username handling
+    if(btnSaveName){ btnSaveName.onclick = () => { const v = (nameInput?.value || '').trim() || 'Anonymous'; setName(v); sys(`Saved name as ${v}`); }; }
+
+    // Initial state
+    inputEl.disabled = true; sendBtn.disabled = true; setStatus('Idle','idle');
+    // Init name
+    try{ if(nameInput) nameInput.value = getName(); }catch{}
+  </script>
+</body>
+</html>

@@ -303,6 +303,18 @@ const pages = [
     name: "Audio Modulator v8",
     desc: "A tool that allows you to modulate audio in real-time.",
     url: "/audio-modulator"
+  },
+  {
+    id: "p2p-webrtc-chat",
+    name: "P2P WebRTC Chat",
+    desc: "A tool that allows you to chat with someone else using WebRTC - Doesn't require any servers or accounts.",
+    url: "/p2p-webrtc-chat"
+  },
+  {
+    id: "developer-of-vessel",
+    name: "Developer of Vessel - @sidmaz666 - Portfolio",
+    desc: "A portfolio of the developer of Vessel.",
+    url: "https://sidmaz-xyz.vercel.app"
   }
 ];
 
